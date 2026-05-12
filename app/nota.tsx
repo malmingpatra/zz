@@ -143,26 +143,56 @@ export default function NotaScreen() {
   }
 
   function handlePrint() {
-    if (Platform.OS === 'web') {
-      const style = document.createElement('style');
-      style.id = 'print-override';
-      style.innerHTML = `
-        @media print {
-          #nota-header { display: none !important; }
-          #nota-actions { display: none !important; }
-          #nota-scroll { overflow: visible !important; }
-        }
-      `;
-      document.head.appendChild(style);
-      window.print();
-      const el = document.getElementById('print-override');
-      if (el) el.remove();
-    } else {
-      Alert.alert("Cetak Nota", "Struk berhasil dicetak!", [
-        { text: "OK", onPress: handleClose },
-      ]);
-    }
+function handlePrint() {
+  if (Platform.OS === 'web') {
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Nota - ${invoiceId}</title>
+          <style>
+            body { font-family: monospace; padding: 20px; font-size: 12px; }
+            .center { text-align: center; }
+            .bold { font-weight: bold; }
+            .row { display: flex; justify-content: space-between; }
+            .dashed { border-top: 1px dashed #000; margin: 8px 0; }
+            .solid { border-top: 1px solid #000; margin: 8px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="center bold">${storeSettings?.storeName || "NAMA TOKO"}</div>
+          <div class="center">${storeSettings?.storeAddress || "ALAMAT TOKO"}</div>
+          <div class="dashed"></div>
+          <div class="row"><span>No. Nota</span><span>${invoiceId}</span></div>
+          <div class="row"><span>Tanggal</span><span>${dateStr}</span></div>
+          <div class="row"><span>Kasir</span><span>${order?.staff || "Kasir"}</span></div>
+          <div class="dashed"></div>
+          ${items.map(item => `
+            <div class="bold">${item.name}</div>
+            <div class="row">
+              <span>${item.qty} x ${fmt(item.price)}</span>
+              <span>${fmt(item.qty * item.price)}</span>
+            </div>
+          `).join('')}
+          <div class="solid"></div>
+          <div class="row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
+          ${discountAmount > 0 ? `<div class="row"><span>Diskon ${discountType === 'pct' ? discountValue + '%' : ''}</span><span>-${fmt(discountAmount)}</span></div>` : ''}
+          <div class="row bold"><span>TOTAL</span><span>${fmt(total)}</span></div>
+          <div class="dashed"></div>
+          <div class="center">Terima kasih atas kunjungan Anda!</div>
+          <div class="center">Barang yang sudah dibeli tidak dapat dikembalikan.</div>
+          <script>window.onload = function() { window.print(); window.close(); }</script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  } else {
+    Alert.alert("Cetak Nota", "Struk berhasil dicetak!", [
+      { text: "OK", onPress: handleClose },
+    ]);
   }
+}
 
   return (
     <View style={s.container}>
