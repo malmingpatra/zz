@@ -13,9 +13,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { ErrorBoundary } from "../components/ErrorBoundary";
-import { DatabaseProvider } from "../context/DatabaseContext";
-import { CartProvider } from "../context/CartContext";
+import { ErrorBoundary } from "@/_components/ErrorBoundary";
+import { DatabaseProvider } from "@/_context/DatabaseContext";
+import { CartProvider } from "@/_context/CartContext";
 
 SplashScreen.preventAutoHideAsync();
 

@@ -44,9 +44,9 @@ import {
 } from "lucide-react-native";
 import NetInfo from "@react-native-community/netinfo";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useColors } from "../../hooks/useColors";
-import { useDatabase } from "../../context/DatabaseContext";
-import { auth, db } from "../../context/firebase-setup";
+import { useColors } from "@/_hooks/useColors";
+import { useDatabase } from "@/_context/DatabaseContext";
+import { auth, db } from "@/_context/firebase-setup";
 import { writeBatch, doc, serverTimestamp } from "firebase/firestore";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 

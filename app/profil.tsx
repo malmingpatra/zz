@@ -14,15 +14,15 @@ import {
 import { Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useColors } from "../hooks/useColors";
-import { auth, db } from "../context/firebase-setup";
+import { useColors } from "@/_hooks/useColors";
+import { auth, db } from "@/_context/firebase-setup";
 import { signOut, updateProfile } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
-import { useDatabase } from "../context/DatabaseContext";
-import { useAutoCloseDialog, DialogOverlay } from "../components/DialogOverlay";
+import { useDatabase } from "@/_context/DatabaseContext";
+import { useAutoCloseDialog, DialogOverlay } from "@/_components/DialogOverlay";
 import * as LucideIcons from "lucide-react-native";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import ConfirmationModal from "../components/ConfirmationModal";
+import ConfirmationModal from "@/_components/ConfirmationModal";
 import { 
   ArrowLeft, 
   User, 

@@ -10,9 +10,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeft, Printer } from "lucide-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useColors } from "../hooks/useColors";
-import { useCart } from "../context/CartContext";
-import { useDatabase } from "../context/DatabaseContext";
+import { useColors } from "@/_hooks/useColors";
+import { useCart } from "@/_context/CartContext";
+import { useDatabase } from "@/_context/DatabaseContext";
 
 function fmt(n: number) {
   return "Rp " + n.toLocaleString("id-ID");

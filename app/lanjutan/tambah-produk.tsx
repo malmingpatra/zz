@@ -20,10 +20,10 @@ import {
   Plus 
 } from "lucide-react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useColors } from "../../hooks/useColors";
-import { useAutoCloseDialog, DialogOverlay } from "../../components/DialogOverlay";
+import { useColors } from "@/_hooks/useColors";
+import { useAutoCloseDialog, DialogOverlay } from "@/_components/DialogOverlay";
 
-import { useDatabase } from "../../context/DatabaseContext";
+import { useDatabase } from "@/_context/DatabaseContext";
 
 const CATEGORIES = ["Minuman", "Makanan", "Sembako", "Lainnya"];
 

@@ -23,10 +23,10 @@ import {
   X
 } from "lucide-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useColors } from "../../hooks/useColors";
-import { useDatabase } from "../../context/DatabaseContext";
+import { useColors } from "@/_hooks/useColors";
+import { useDatabase } from "@/_context/DatabaseContext";
 import { doc, updateDoc } from "firebase/firestore";
-import { db } from "../../context/firebase-setup";
+import { db } from "@/_context/firebase-setup";
 
 export default function DetailMemberScreen() {
   const colors = useColors();

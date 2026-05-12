@@ -5,13 +5,13 @@
     "strict": true,
     "paths": {
       "@/*": [
-        "./*"
+        "./app/*"
       ]
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "app/**/*.ts",
+    "app/**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ]

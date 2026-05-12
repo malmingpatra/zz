@@ -19,9 +19,9 @@ import {
   Shield 
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import { useColors } from "../hooks/useColors";
+import { useColors } from "@/_hooks/useColors";
 import { signInWithPopup, GoogleAuthProvider, isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
-import { auth } from "../context/firebase-setup";
+import { auth } from "@/_context/firebase-setup";
 
 export default function LoginScreen() {
   const colors = useColors();
