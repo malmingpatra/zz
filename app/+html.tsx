@@ -1,8 +1,6 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
-// This file is web-only and used to configure the root HTML for every web page during static rendering.
-// The contents of this function only run in Node.js environments and do not have access to the DOM or browser APIs.
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="id">
@@ -18,28 +16,37 @@ export default function Root({ children }: PropsWithChildren) {
         <link rel="apple-touch-icon" href="/pwa-icon.svg" />
         <link rel="icon" type="image/svg+xml" href="/pwa-icon.svg" />
         
-        {/*
-          Disable body scrolling on web. This makes ScrollView components work closer to how they do on native.
-          However, body scrolling is often nice to have for web. If you want to enable it, remove this line.
-        */}
         <ScrollViewStyleReset />
 
         {/* Sembunyikan URL path */}
         <script dangerouslySetInnerHTML={{
           __html: `
             (function() {
-              var _pushState = history.pushState;
-              var _replaceState = history.replaceState;
-              history.pushState = function() {
-                _pushState.apply(history, ['', '', '/']);
+              function forceRoot() {
+                if (window.location.pathname !== '/') {
+                  window.history.replaceState(null, '', '/');
+                }
+              }
+
+              // Override pushState dan replaceState
+              var _push = history.pushState.bind(history);
+              var _replace = history.replaceState.bind(history);
+              history.pushState = function(state, title, url) {
+                _push(state, title, '/');
               };
-              history.replaceState = function() {
-                _replaceState.apply(history, ['', '', '/']);
+              history.replaceState = function(state, title, url) {
+                _replace(state, title, '/');
               };
+
+              // Tangkap juga tombol back/forward browser
+              window.addEventListener('popstate', forceRoot);
+
+              // Jalankan terus setiap 100ms sebagai fallback
+              setInterval(forceRoot, 100);
             })();
           `
         }} />
-        
+
         <script dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator) {
