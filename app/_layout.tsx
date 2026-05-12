@@ -12,6 +12,7 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Platform } from "react-native";
 
 import { ErrorBoundary } from "./_components/ErrorBoundary";
 import { DatabaseProvider } from "./_context/DatabaseContext";
@@ -40,6 +41,18 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
+
+  // Override URL di web
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      const interval = setInterval(() => {
+        if (window.location.pathname !== "/") {
+          window.history.replaceState(null, "", "/");
+        }
+      }, 50);
+      return () => clearInterval(interval);
+    }
+  }, []);
 
   if (!fontsLoaded && !fontError) return null;
 
