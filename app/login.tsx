@@ -44,7 +44,7 @@ export default function LoginScreen() {
         signInWithEmailLink(auth, emailForSignIn, window.location.href)
           .then((result) => {
             window.localStorage.removeItem('emailForSignIn');
-            router.replace("/universal/");
+            router.replace("/");
           })
           .catch((error) => {
             alert("Error sign in with magic link: " + error.message);
@@ -57,7 +57,7 @@ export default function LoginScreen() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      router.replace("/universal/");
+      router.replace("/");
     } catch (error) {
       console.error("Login failed", error);
     }
@@ -77,7 +77,7 @@ export default function LoginScreen() {
         const { sendSignInLinkToEmail } = require("firebase/auth");
         window.localStorage.setItem('emailForSignIn', trimmed);
         await sendSignInLinkToEmail(auth, trimmed, {
-          url: window.location.origin + "/universal/login",
+          url: window.location.origin + "/login",
           handleCodeInApp: true
         });
       }

@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useDatabase } from "@/context/DatabaseContext";
-import { useAutoCloseDialog, DialogOverlay } from "@/app/universal/components/DialogOverlay";
+import { useAutoCloseDialog, DialogOverlay } from "@/components/DialogOverlay";
 import * as LucideIcons from "lucide-react-native";
 import { ArrowLeft, ChevronRight, Tag, Link as LinkIcon, Plus, Search as SearchIcon, Smartphone } from "lucide-react-native";
 import { FontAwesome5 } from "@expo/vector-icons";

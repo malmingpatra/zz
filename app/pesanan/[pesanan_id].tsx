@@ -27,7 +27,7 @@ import { useColors } from "@/hooks/useColors";
 import { useDatabase } from "@/context/DatabaseContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/context/firebase-setup";
-import ConfirmationModal from "@/app/universal/components/ConfirmationModal";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 function fmt(n?: number) {
   if (typeof n !== "number") n = 0;
@@ -304,7 +304,7 @@ export default function DetailPesananScreen() {
             <TouchableOpacity
               style={s.outlineBtn}
               activeOpacity={0.8}
-              onPress={() => router.push(`/universal/resi/${order.id}`)}
+              onPress={() => router.push(`/resi/${order.id}`)}
               disabled={loading}
             >
               <Printer size={18} color="#888" />
@@ -344,7 +344,7 @@ export default function DetailPesananScreen() {
             <TouchableOpacity
               style={s.outlineBtn}
               activeOpacity={0.8}
-              onPress={() => router.push(`/universal/resi/${order.id}`)}
+              onPress={() => router.push(`/resi/${order.id}`)}
               disabled={loading}
             >
               <Printer size={18} color="#888" />
@@ -357,7 +357,7 @@ export default function DetailPesananScreen() {
           <TouchableOpacity
             style={s.outlineBtn}
             activeOpacity={0.8}
-            onPress={() => router.push(`/universal/resi/${order.id}`)}
+            onPress={() => router.push(`/resi/${order.id}`)}
             disabled={loading}
           >
             <Printer size={18} color="#888" />

@@ -21,7 +21,7 @@ import {
 } from "lucide-react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useColors } from "@/hooks/useColors";
-import { useAutoCloseDialog, DialogOverlay } from "@/app/universal/components/DialogOverlay";
+import { useAutoCloseDialog, DialogOverlay } from "@/components/DialogOverlay";
 
 import { useDatabase } from "@/context/DatabaseContext";
 

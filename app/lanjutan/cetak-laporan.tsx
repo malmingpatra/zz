@@ -20,7 +20,7 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { useDatabase } from "@/context/DatabaseContext";
 import { auth } from "@/context/firebase-setup";
-import { useAutoCloseDialog, DialogOverlay } from "@/app/universal/components/DialogOverlay";
+import { useAutoCloseDialog, DialogOverlay } from "@/components/DialogOverlay";
 
 export default function CetakLaporan() {
   const router = useRouter();

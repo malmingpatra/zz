@@ -22,7 +22,7 @@ import {
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useDatabase, Product } from "@/context/DatabaseContext";
-import { useAutoCloseDialog, DialogOverlay } from "@/app/universal/components/DialogOverlay";
+import { useAutoCloseDialog, DialogOverlay } from "@/components/DialogOverlay";
 
 type EditField = "stok-harga" | "stok" | "harga";
 

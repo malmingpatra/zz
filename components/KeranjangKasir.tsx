@@ -139,7 +139,7 @@ export default function KeranjangKasir({ visible, onClose }: KeranjangKasirProps
     if (shouldPrint) {
       onClose();
       router.push({
-        pathname: "/universal/nota",
+        pathname: "/nota",
         params: {
           orderId: orderId,
         },

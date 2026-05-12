@@ -19,10 +19,10 @@ import { auth, db } from "@/context/firebase-setup";
 import { signOut, updateProfile } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 import { useDatabase } from "@/context/DatabaseContext";
-import { useAutoCloseDialog, DialogOverlay } from "@/app/universal/components/DialogOverlay";
+import { useAutoCloseDialog, DialogOverlay } from "@/components/DialogOverlay";
 import * as LucideIcons from "lucide-react-native";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import ConfirmationModal from "@/app/universal/components/ConfirmationModal";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import { 
   ArrowLeft, 
   User, 
@@ -517,7 +517,7 @@ export default function ProfilScreen() {
             <TouchableOpacity style={s.dangerBtn} activeOpacity={0.85} onPress={async () => {
               try {
                 await signOut(auth);
-                router.replace("/universal/login");
+                router.replace("/login");
               } catch (e) {
                 console.error("Logout failed", e);
               }
