@@ -18,6 +18,14 @@ export default function Root({ children }: PropsWithChildren) {
         
         <ScrollViewStyleReset />
 
+        {/* CSS Print - sembunyikan elemen no-print saat cetak */}
+        <style>{`
+          @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+          }
+        `}</style>
+
         {/* Sembunyikan URL path */}
         <script dangerouslySetInnerHTML={{
           __html: `
@@ -27,8 +35,6 @@ export default function Root({ children }: PropsWithChildren) {
                   window.history.replaceState(null, '', '/');
                 }
               }
-
-              // Override pushState dan replaceState
               var _push = history.pushState.bind(history);
               var _replace = history.replaceState.bind(history);
               history.pushState = function(state, title, url) {
@@ -37,11 +43,7 @@ export default function Root({ children }: PropsWithChildren) {
               history.replaceState = function(state, title, url) {
                 _replace(state, title, '/');
               };
-
-              // Tangkap juga tombol back/forward browser
               window.addEventListener('popstate', forceRoot);
-
-              // Jalankan terus setiap 100ms sebagai fallback
               setInterval(forceRoot, 100);
             })();
           `
