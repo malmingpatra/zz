@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { AlertCircle, X } from "lucide-react-native";
 
-import { useColors } from "@/_hooks/useColors";
+import { useColors } from "../_hooks/useColors";
 
 interface ConfirmationModalProps {
   visible: boolean;

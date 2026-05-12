@@ -23,11 +23,11 @@ import {
   CheckCircle,
 } from "lucide-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useColors } from "@/_hooks/useColors";
-import { useDatabase } from "@/_context/DatabaseContext";
+import { useColors } from "../_hooks/useColors";
+import { useDatabase } from "../_context/DatabaseContext";
 import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/_context/firebase-setup";
-import ConfirmationModal from "@/_components/ConfirmationModal";
+import { db } from "../_context/firebase-setup";
+import ConfirmationModal from "../_components/ConfirmationModal";
 
 function fmt(n?: number) {
   if (typeof n !== "number") n = 0;

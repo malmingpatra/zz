@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useColors } from "@/_hooks/useColors";
+import { useColors } from "../_hooks/useColors";
 
 export type ErrorFallbackProps = {
   error: Error;

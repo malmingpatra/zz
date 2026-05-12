@@ -28,11 +28,11 @@ import {
 } from "lucide-react-native";
 import NetInfo from "@react-native-community/netinfo";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useColors } from "@/_hooks/useColors";
-import { useCart, Product } from "@/_context/CartContext";
-import { useDatabase } from "@/_context/DatabaseContext";
-import KeranjangKasir from "@/_components/KeranjangKasir";
-import { auth } from "@/_context/firebase-setup";
+import { useColors } from "./_hooks/useColors";
+import { useCart, Product } from "./_context/CartContext";
+import { useDatabase } from "./_context/DatabaseContext";
+import KeranjangKasir from "./_components/KeranjangKasir";
+import { auth } from "./_context/firebase-setup";
 import { onAuthStateChanged, signOut, User as FirebaseAuthUser } from "firebase/auth";
 
 function fmt(n: number) {

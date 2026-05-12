@@ -17,8 +17,8 @@ import {
   ShoppingCart 
 } from "lucide-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useColors } from "@/_hooks/useColors";
-import { useCart } from "@/_context/CartContext";
+import { useColors } from "../_hooks/useColors";
+import { useCart } from "../_context/CartContext";
 
 function fmt(n: number) {
   return "Rp " + n.toLocaleString("id-ID");

@@ -11,9 +11,9 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useColors } from "@/_hooks/useColors";
-import { useDatabase } from "@/_context/DatabaseContext";
-import { useAutoCloseDialog, DialogOverlay } from "@/_components/DialogOverlay";
+import { useColors } from "../_hooks/useColors";
+import { useDatabase } from "../_context/DatabaseContext";
+import { useAutoCloseDialog, DialogOverlay } from "../_components/DialogOverlay";
 import * as LucideIcons from "lucide-react-native";
 import { ArrowLeft, ChevronRight, Tag, Link as LinkIcon, Plus, Search as SearchIcon, Smartphone } from "lucide-react-native";
 import { FontAwesome5 } from "@expo/vector-icons";

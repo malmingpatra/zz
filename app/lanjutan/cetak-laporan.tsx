@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useColors } from "@/_hooks/useColors";
+import { useColors } from "../_hooks/useColors";
 import { 
   ArrowLeft, 
   Printer, 
@@ -18,9 +18,9 @@ import {
 } from "lucide-react-native";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
-import { useDatabase } from "@/_context/DatabaseContext";
-import { auth } from "@/_context/firebase-setup";
-import { useAutoCloseDialog, DialogOverlay } from "@/_components/DialogOverlay";
+import { useDatabase } from "../_context/DatabaseContext";
+import { auth } from "../_context/firebase-setup";
+import { useAutoCloseDialog, DialogOverlay } from "../_components/DialogOverlay";
 
 export default function CetakLaporan() {
   const router = useRouter();

@@ -9,9 +9,9 @@ import {
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useColors } from "@/_hooks/useColors";
-import { CartItem } from "@/_context/CartContext";
-import { useDatabase } from "@/_context/DatabaseContext";
+import { useColors } from "../_hooks/useColors";
+import { CartItem } from "../_context/CartContext";
+import { useDatabase } from "../_context/DatabaseContext";
 
 interface ReceiptModalProps {
   visible: boolean;
