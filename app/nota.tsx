@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeft, Printer } from "lucide-react-native";
@@ -43,9 +44,7 @@ export default function NotaScreen() {
   const router = useRouter();
   const { clearCart } = useCart();
   const { orders, storeSettings } = useDatabase();
-  const params = useLocalSearchParams<{
-    orderId: string;
-  }>();
+  const params = useLocalSearchParams<{ orderId: string }>();
 
   const s = StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
@@ -86,9 +85,7 @@ export default function NotaScreen() {
       borderTopWidth: 1, borderTopColor: colors.border,
       borderStyle: "dashed", marginVertical: 10,
     },
-    solidLine: {
-      height: 1, backgroundColor: colors.border, marginVertical: 10,
-    },
+    solidLine: { height: 1, backgroundColor: colors.border, marginVertical: 10 },
     metaRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 3 },
     metaKey: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
     metaVal: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.foreground, textAlign: "right", flex: 1, marginLeft: 8 },
@@ -146,26 +143,41 @@ export default function NotaScreen() {
   }
 
   function handlePrint() {
-    Alert.alert("Cetak Nota", "Struk berhasil dicetak!", [
-      { text: "OK", onPress: handleClose },
-    ]);
+    if (Platform.OS === 'web') {
+      const style = document.createElement('style');
+      style.id = 'print-override';
+      style.innerHTML = `
+        @media print {
+          [data-nativeid="nota-header"] { display: none !important; }
+          [data-nativeid="nota-actions"] { display: none !important; }
+          [data-nativeid="nota-scroll"] { overflow: visible !important; }
+        }
+      `;
+      document.head.appendChild(style);
+      window.print();
+      const el = document.getElementById('print-override');
+      if (el) el.remove();
+    } else {
+      Alert.alert("Cetak Nota", "Struk berhasil dicetak!", [
+        { text: "OK", onPress: handleClose },
+      ]);
+    }
   }
 
   return (
     <View style={s.container}>
-      <View style={s.header}>
+      <View nativeID="nota-header" style={s.header}>
         <TouchableOpacity style={s.backBtn} onPress={handleClose} activeOpacity={0.7}>
           <ArrowLeft size={18} color={colors.foreground} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Cetak Nota</Text>
       </View>
 
-      <ScrollView style={s.scroll} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView nativeID="nota-scroll" style={s.scroll} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
         <Text style={s.previewLabel}>Preview Nota</Text>
 
         <View style={s.notaCard}>
           <View style={s.notaInner}>
-            {/* Store header */}
             <View style={s.notaHeaderBlock}>
               <Text style={s.notaStoreName}>{storeSettings?.storeName || "NAMA TOKO BELUM DIATUR"}</Text>
               <Text style={s.notaStoreSub}>{storeSettings?.storeAddress || "ALAMAT TOKO BELUM DIATUR"}</Text>
@@ -173,7 +185,6 @@ export default function NotaScreen() {
 
             <View style={s.dashes} />
 
-            {/* Meta */}
             <View style={{ marginBottom: 4 }}>
               <View style={s.metaRow}>
                 <Text style={s.metaKey}>No. Nota</Text>
@@ -191,18 +202,13 @@ export default function NotaScreen() {
 
             <View style={s.dashes} />
 
-            {/* Items */}
             <View style={{ marginBottom: 4 }}>
               {items.map((item, idx) => (
                 <View key={item.id + "-" + idx} style={s.itemWrap}>
                   <Text style={s.itemName}>{item.name}</Text>
                   <View style={s.itemDetail}>
-                    <Text style={s.itemDetailText}>
-                      {item.qty} x {fmt(item.price)}
-                    </Text>
-                    <Text style={s.itemDetailText}>
-                      {fmt(item.qty * item.price)}
-                    </Text>
+                    <Text style={s.itemDetailText}>{item.qty} x {fmt(item.price)}</Text>
+                    <Text style={s.itemDetailText}>{fmt(item.qty * item.price)}</Text>
                   </View>
                 </View>
               ))}
@@ -210,7 +216,6 @@ export default function NotaScreen() {
 
             <View style={s.solidLine} />
 
-            {/* Summary */}
             <View>
               <View style={s.sumRow}>
                 <Text style={s.sumText}>Subtotal</Text>
@@ -240,7 +245,7 @@ export default function NotaScreen() {
         </View>
       </ScrollView>
 
-      <View style={s.bottomActions}>
+      <View nativeID="nota-actions" style={s.bottomActions}>
         <TouchableOpacity style={s.cancelBtn} onPress={handleClose} activeOpacity={0.8}>
           <Text style={s.cancelBtnText}>Batal</Text>
         </TouchableOpacity>
