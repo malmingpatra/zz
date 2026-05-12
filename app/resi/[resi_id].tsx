@@ -66,14 +66,13 @@ export default function ResiScreen() {
 
   function handlePrint() {
     if (Platform.OS === 'web') {
-      // Tambahkan class no-print sementara ke header dan bottom actions
       const style = document.createElement('style');
       style.id = 'print-override';
       style.innerHTML = `
         @media print {
-          [data-nativeid="resi-header"] { display: none !important; }
-          [data-nativeid="resi-actions"] { display: none !important; }
-          [data-nativeid="resi-scroll"] { overflow: visible !important; }
+          #resi-header { display: none !important; }
+          #resi-actions { display: none !important; }
+          #resi-scroll { overflow: visible !important; }
         }
       `;
       document.head.appendChild(style);
@@ -87,7 +86,6 @@ export default function ResiScreen() {
 
   return (
     <View style={s.container}>
-      {/* Header */}
       <View nativeID="resi-header" style={[s.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
           <ArrowLeft size={20} color="#444" />
@@ -100,7 +98,6 @@ export default function ResiScreen() {
 
         <View style={s.resiCard}>
           <View style={s.resiInner}>
-            {/* Top Section */}
             <View style={s_resi.topRow}>
               <View style={s_resi.storeInfo}>
                 <Text style={s_resi.storeName}>{storeSettings?.storeName || "NAMA TOKO BELUM DIATUR"}</Text>
@@ -115,7 +112,6 @@ export default function ResiScreen() {
 
             <View style={s_resi.dividerSolid} />
 
-            {/* Parties Section */}
             <View style={s_resi.partiesRow}>
               <View style={s_resi.partyCol}>
                 <Text style={s_resi.partyLabel}>Staf / Pengirim</Text>
@@ -133,7 +129,6 @@ export default function ResiScreen() {
 
             <View style={s_resi.dividerDashed} />
 
-            {/* Items */}
             <View style={s_resi.itemsList}>
               {(order.items || []).map((item: any, idx: number) => (
                 <View key={idx} style={s_resi.itemRow}>
@@ -148,7 +143,6 @@ export default function ResiScreen() {
 
             <View style={[s_resi.dividerDashed, { borderTopColor: "#bbb" }]} />
 
-            {/* Summary */}
             <View style={s_resi.summary}>
               <View style={s_resi.sumRow}>
                 <Text style={s_resi.sumLabel}>Subtotal</Text>
@@ -176,7 +170,6 @@ export default function ResiScreen() {
         </View>
       </ScrollView>
 
-      {/* Actions */}
       <View nativeID="resi-actions" style={s.bottomActions}>
         <TouchableOpacity style={s.cancelBtn} onPress={() => router.back()} activeOpacity={0.7}>
           <Text style={s.cancelBtnText}>Batal</Text>
