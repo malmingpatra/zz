@@ -1,5 +1,5 @@
-import colors, { ThemeKey, LIGHT_THEME_KEYS } from "@/constants/colors";
-import { DatabaseContext } from "@/context/DatabaseContext";
+import colors, { ThemeKey, LIGHT_THEME_KEYS } from "../constants/colors";
+import { DatabaseContext } from "../context/DatabaseContext";
 import { useContext } from "react";
 
 /**

@@ -24,10 +24,10 @@ import {
   CheckCircle 
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import { useColors } from "@/hooks/useColors";
-import { useCart, CartItem } from "@/context/CartContext";
-import { useDatabase } from "@/context/DatabaseContext";
-import { auth } from "@/context/firebase-setup";
+import { useColors } from "../hooks/useColors";
+import { useCart, CartItem } from "../context/CartContext";
+import { useDatabase } from "../context/DatabaseContext";
+import { auth } from "../context/firebase-setup";
 import { serverTimestamp } from "firebase/firestore";
 
 // Enable LayoutAnimation on Android

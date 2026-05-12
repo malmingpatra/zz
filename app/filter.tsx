@@ -10,9 +10,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Search, X, Check, ArrowLeft } from "lucide-react-native";
-import { useColors } from "@/hooks/useColors";
+import { useColors } from "../hooks/useColors";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "../context/CartContext";
 
 export default function FilterPage() {
   const colors = useColors();

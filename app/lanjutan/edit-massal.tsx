@@ -20,9 +20,9 @@ import {
   Save,
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import { useColors } from "@/hooks/useColors";
-import { useDatabase, Product } from "@/context/DatabaseContext";
-import { useAutoCloseDialog, DialogOverlay } from "@/components/DialogOverlay";
+import { useColors } from "../../hooks/useColors";
+import { useDatabase, Product } from "../../context/DatabaseContext";
+import { useAutoCloseDialog, DialogOverlay } from "../../components/DialogOverlay";
 
 type EditField = "stok-harga" | "stok" | "harga";
 
