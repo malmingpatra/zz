@@ -1,0 +1,6 @@
+{
+  "name": "Kasir Pintar POS",
+  "description": "Aplikas kasir pintar dengan fitur manajemen produk, pesanan, dan laporan statistik.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

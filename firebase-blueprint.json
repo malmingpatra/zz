@@ -1,0 +1,98 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Product items",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "stock": { "type": "number" },
+        "stockStatus": { "type": "string", "enum": ["ok", "warn"] },
+        "desc": { "type": "string" }
+      },
+      "required": ["id", "name", "category", "price", "stock", "stockStatus"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Order records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "buyer": { "type": "string" },
+        "staff": { "type": "string" },
+        "total": { "type": "number" },
+        "cat": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string", "enum": ["selesai", "diproses", "menunggu", "dibatalkan"] },
+        "items": { "type": "array" }
+      },
+      "required": ["id", "buyer", "staff", "total", "cat", "date", "status"]
+    },
+    "Member": {
+      "title": "Member",
+      "description": "Members",
+      "type": "object",
+      "properties": {
+        "initials": { "type": "string" },
+        "name": { "type": "string" },
+        "sub": { "type": "string" },
+        "status": { "type": "string", "enum": ["aktif", "nonaktif"] }
+      },
+      "required": ["initials", "name", "sub", "status"]
+    },
+    "Bantuan": {
+      "title": "Bantuan",
+      "description": "Help center links",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "icon": { "type": "string" },
+        "name": { "type": "string" },
+        "bg": { "type": "string" },
+        "color": { "type": "string" },
+        "link": { "type": "string" }
+      },
+      "required": ["id", "icon", "name", "bg", "color"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "address": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "staff"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User profiles"
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "List of products"
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "List of orders"
+    },
+    "/members/{memberId}": {
+      "schema": { "$ref": "#/entities/Member" },
+      "description": "List of members"
+    },
+    "/bantuan/{bantuanId}": {
+      "schema": { "$ref": "#/entities/Bantuan" },
+      "description": "List of bantuan links"
+    }
+  }
+}
