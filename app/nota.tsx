@@ -148,9 +148,9 @@ export default function NotaScreen() {
       style.id = 'print-override';
       style.innerHTML = `
         @media print {
-          [data-nativeid="nota-header"] { display: none !important; }
-          [data-nativeid="nota-actions"] { display: none !important; }
-          [data-nativeid="nota-scroll"] { overflow: visible !important; }
+          #nota-header { display: none !important; }
+          #nota-actions { display: none !important; }
+          #nota-scroll { overflow: visible !important; }
         }
       `;
       document.head.appendChild(style);
