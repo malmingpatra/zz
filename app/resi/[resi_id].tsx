@@ -64,26 +64,76 @@ export default function ResiScreen() {
     amount: discountAmount
   } : null;
 
-  function handlePrint() {
-    if (Platform.OS === 'web') {
-      const style = document.createElement('style');
-      style.id = 'print-override';
-      style.innerHTML = `
-        @media print {
-          #resi-header { display: none !important; }
-          #resi-actions { display: none !important; }
-          #resi-scroll { overflow: visible !important; }
-        }
-      `;
-      document.head.appendChild(style);
-      window.print();
-      const el = document.getElementById('print-override');
-      if (el) el.remove();
-    } else {
-      Alert.alert("Cetak Resi", "Resi/Label pengiriman sedang dicetak...");
-    }
+function handlePrint() {
+  if (Platform.OS === 'web') {
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Resi - ${order.id}</title>
+          <style>
+            body { font-family: monospace; padding: 20px; font-size: 12px; }
+            .center { text-align: center; }
+            .bold { font-weight: bold; }
+            .row { display: flex; justify-content: space-between; }
+            .dashed { border-top: 1px dashed #000; margin: 8px 0; }
+            .solid { border-top: 2px solid #000; margin: 8px 0; }
+            .parties { display: flex; gap: 20px; margin: 8px 0; }
+            .party { flex: 1; }
+            .label { font-size: 10px; color: #aaa; text-transform: uppercase; }
+          </style>
+        </head>
+        <body>
+          <div class="row">
+            <div>
+              <div class="bold">${storeSettings?.storeName || "NAMA TOKO"}</div>
+              <div>${storeSettings?.storeAddress || "ALAMAT TOKO"}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="label">No. Resi</div>
+              <div class="bold" style="color:#1A6640">${order.id}</div>
+              <div>${order.date}</div>
+            </div>
+          </div>
+          <div class="solid"></div>
+          <div class="parties">
+            <div class="party">
+              <div class="label">Staf / Pengirim</div>
+              <div class="bold">${order.staff}</div>
+              <div>${storeSettings?.storeName || "Toko Anda"}</div>
+            </div>
+            <div class="party">
+              <div class="label">Penerima</div>
+              <div class="bold">${order.buyer}</div>
+              <div>${order.phone}</div>
+              <div>${order.address}</div>
+            </div>
+          </div>
+          <div class="dashed"></div>
+          ${(order.items || []).map((item: any) => `
+            <div class="bold">${item.name}</div>
+            <div class="row">
+              <span>${item.qty} x ${fmt(item.price)}</span>
+              <span>${fmt(item.qty * item.price)}</span>
+            </div>
+          `).join('')}
+          <div class="dashed"></div>
+          <div class="row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
+          ${diskon ? `<div class="row"><span>${diskon.label}</span><span>-${fmt(diskon.amount)}</span></div>` : ''}
+          <div class="row bold"><span>TOTAL</span><span>${fmt(total)}</span></div>
+          <div class="dashed"></div>
+          <div class="center">Simpan resi ini sebagai bukti pengiriman.</div>
+          <div class="center">Hubungi kami jika ada pertanyaan.</div>
+          <script>window.onload = function() { window.print(); window.close(); }</script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  } else {
+    Alert.alert("Cetak Resi", "Resi/Label pengiriman sedang dicetak...");
   }
-
+}
   return (
     <View style={s.container}>
       <View nativeID="resi-header" style={[s.header, { paddingTop: insets.top + 10 }]}>
