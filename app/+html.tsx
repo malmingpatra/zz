@@ -23,6 +23,22 @@ export default function Root({ children }: PropsWithChildren) {
           However, body scrolling is often nice to have for web. If you want to enable it, remove this line.
         */}
         <ScrollViewStyleReset />
+
+        {/* Sembunyikan URL path */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              var _pushState = history.pushState;
+              var _replaceState = history.replaceState;
+              history.pushState = function() {
+                _pushState.apply(history, ['', '', '/']);
+              };
+              history.replaceState = function() {
+                _replaceState.apply(history, ['', '', '/']);
+              };
+            })();
+          `
+        }} />
         
         <script dangerouslySetInnerHTML={{
           __html: `
