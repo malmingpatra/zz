@@ -19,7 +19,6 @@ function fmt(n?: number) {
   return "Rp " + n.toLocaleString("id-ID");
 }
 
-// Decorative Barcode Component
 const Barcode = ({ id }: { id: string }) => {
   const widths = [3, 1, 2, 1, 3, 2, 1, 1, 2, 3, 1, 2, 1, 3, 2, 1, 2, 1, 3, 1, 2, 2, 1, 3, 1, 1, 2, 3, 1, 2];
   return (
@@ -28,10 +27,7 @@ const Barcode = ({ id }: { id: string }) => {
         {widths.map((w, i) => (
           <View
             key={i}
-            style={[
-              s_resi.barcodeLine,
-              { width: w, height: 20 + (i % 3) * 5 }
-            ]}
+            style={[s_resi.barcodeLine, { width: w, height: 20 + (i % 3) * 5 }]}
           />
         ))}
       </View>
@@ -70,7 +66,20 @@ export default function ResiScreen() {
 
   function handlePrint() {
     if (Platform.OS === 'web') {
+      // Tambahkan class no-print sementara ke header dan bottom actions
+      const style = document.createElement('style');
+      style.id = 'print-override';
+      style.innerHTML = `
+        @media print {
+          [data-nativeid="resi-header"] { display: none !important; }
+          [data-nativeid="resi-actions"] { display: none !important; }
+          [data-nativeid="resi-scroll"] { overflow: visible !important; }
+        }
+      `;
+      document.head.appendChild(style);
       window.print();
+      const el = document.getElementById('print-override');
+      if (el) el.remove();
     } else {
       Alert.alert("Cetak Resi", "Resi/Label pengiriman sedang dicetak...");
     }
@@ -79,14 +88,14 @@ export default function ResiScreen() {
   return (
     <View style={s.container}>
       {/* Header */}
-      <View style={[s.header, { paddingTop: insets.top + 10 }]}>
+      <View nativeID="resi-header" style={[s.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
           <ArrowLeft size={20} color="#444" />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Cetak Resi</Text>
       </View>
 
-      <ScrollView style={s.scroll} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView nativeID="resi-scroll" style={s.scroll} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
         <Text style={s.previewLabel}>Preview Resi</Text>
 
         <View style={s.resiCard}>
@@ -157,7 +166,6 @@ export default function ResiScreen() {
               </View>
             </View>
 
-            {/* Barcode */}
             <Barcode id={order.id} />
 
             <Text style={s_resi.footerText}>
@@ -169,7 +177,7 @@ export default function ResiScreen() {
       </ScrollView>
 
       {/* Actions */}
-      <View style={s.bottomActions}>
+      <View nativeID="resi-actions" style={s.bottomActions}>
         <TouchableOpacity style={s.cancelBtn} onPress={() => router.back()} activeOpacity={0.7}>
           <Text style={s.cancelBtnText}>Batal</Text>
         </TouchableOpacity>
