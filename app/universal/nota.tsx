@@ -47,6 +47,88 @@ export default function NotaScreen() {
     orderId: string;
   }>();
 
+  const s = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    header: {
+      backgroundColor: colors.card,
+      paddingTop: insets.top + 8,
+      paddingBottom: 14,
+      paddingHorizontal: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    backBtn: {
+      width: 36, height: 36, borderRadius: 10,
+      backgroundColor: colors.secondary,
+      alignItems: "center", justifyContent: "center",
+    },
+    headerTitle: { flex: 1, fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground },
+    scroll: { flex: 1 },
+    scrollContent: { padding: 16, paddingBottom: insets.bottom + 80 },
+    previewLabel: {
+      fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground,
+      textTransform: "uppercase", letterSpacing: 0.6,
+      marginBottom: 10, paddingHorizontal: 2,
+    },
+    notaCard: {
+      backgroundColor: colors.card, borderRadius: 14,
+      borderWidth: 1, borderColor: colors.border,
+      overflow: "hidden",
+    },
+    notaInner: { padding: 20 },
+    notaHeaderBlock: { alignItems: "center", marginBottom: 14 },
+    notaStoreName: { fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground, letterSpacing: 0.5, marginBottom: 2 },
+    notaStoreSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground, marginBottom: 1 },
+    dashes: {
+      borderTopWidth: 1, borderTopColor: colors.border,
+      borderStyle: "dashed", marginVertical: 10,
+    },
+    solidLine: {
+      height: 1, backgroundColor: colors.border, marginVertical: 10,
+    },
+    metaRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 3 },
+    metaKey: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
+    metaVal: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.foreground, textAlign: "right", flex: 1, marginLeft: 8 },
+    itemName: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 2 },
+    itemDetail: { flexDirection: "row", justifyContent: "space-between" },
+    itemDetailText: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
+    itemWrap: { marginBottom: 6 },
+    sumRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 2 },
+    sumText: { fontSize: 12, fontFamily: "Inter_400Regular", color: colors.foreground },
+    sumValue: { fontSize: 12, fontFamily: "Inter_400Regular", color: colors.foreground },
+    sumTotal: { fontSize: 14, fontFamily: "Inter_700Bold", color: colors.foreground, paddingTop: 6 },
+    sumTotalVal: { fontSize: 14, fontFamily: "Inter_700Bold", color: colors.foreground },
+    diskonText: { fontSize: 12, fontFamily: "Inter_400Regular", color: colors.destructive },
+    diskonVal: { fontSize: 12, fontFamily: "Inter_400Regular", color: colors.destructive },
+    notaFooter: {
+      textAlign: "center", fontSize: 11, fontFamily: "Inter_400Regular",
+      color: colors.mutedForeground, marginTop: 4, lineHeight: 18,
+    },
+    bottomActions: {
+      position: "absolute", bottom: 0, left: 0, right: 0,
+      flexDirection: "row", gap: 8,
+      padding: 12, paddingBottom: insets.bottom + 12,
+      backgroundColor: colors.card,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    cancelBtn: {
+      flex: 1, height: 46, backgroundColor: colors.card,
+      borderWidth: 1, borderColor: colors.border, borderRadius: 12,
+      alignItems: "center", justifyContent: "center",
+    },
+    cancelBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
+    printBtn: {
+      flex: 1.6, height: 46,
+      backgroundColor: colors.primary, borderRadius: 12,
+      flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
+    },
+    printBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primaryForeground },
+  });
+
   const order = orders.find(o => o.id === (params.orderId || ""));
 
   const discountAmount = order?.discountAmount || 0;
@@ -69,91 +151,11 @@ export default function NotaScreen() {
     ]);
   }
 
-  const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#F0F2EE" },
-    header: {
-      backgroundColor: "#fff",
-      paddingTop: insets.top + 8,
-      paddingBottom: 14,
-      paddingHorizontal: 16,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: "#ddd",
-    },
-    backBtn: {
-      width: 36, height: 36, borderRadius: 10,
-      backgroundColor: "#F5F5F5",
-      alignItems: "center", justifyContent: "center",
-    },
-    headerTitle: { flex: 1, fontSize: 15, fontFamily: "Inter_700Bold", color: "#1A1A1A" },
-    scroll: { flex: 1 },
-    scrollContent: { padding: 16, paddingBottom: insets.bottom + 80 },
-    previewLabel: {
-      fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#aaa",
-      textTransform: "uppercase", letterSpacing: 0.6,
-      marginBottom: 10, paddingHorizontal: 2,
-    },
-    notaCard: {
-      backgroundColor: "#fff", borderRadius: 14,
-      borderWidth: 1, borderColor: "#ddd",
-      overflow: "hidden",
-    },
-    notaInner: { padding: 20 },
-    notaHeaderBlock: { alignItems: "center", marginBottom: 14 },
-    notaStoreName: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1A1A1A", letterSpacing: 0.5, marginBottom: 2 },
-    notaStoreSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#888", marginBottom: 1 },
-    dashes: {
-      borderTopWidth: 1, borderTopColor: "#ccc",
-      borderStyle: "dashed", marginVertical: 10,
-    },
-    solidLine: {
-      height: 1, backgroundColor: "#bbb", marginVertical: 10,
-    },
-    metaRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 3 },
-    metaKey: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#888" },
-    metaVal: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#1A1A1A", textAlign: "right", flex: 1, marginLeft: 8 },
-    itemName: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#1A1A1A", marginBottom: 2 },
-    itemDetail: { flexDirection: "row", justifyContent: "space-between" },
-    itemDetailText: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#555" },
-    itemWrap: { marginBottom: 6 },
-    sumRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 2 },
-    sumText: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#1A1A1A" },
-    sumValue: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#1A1A1A" },
-    sumTotal: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1A1A1A", paddingTop: 6 },
-    sumTotalVal: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1A1A1A" },
-    diskonText: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#C0392B" },
-    diskonVal: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#C0392B" },
-    notaFooter: {
-      textAlign: "center", fontSize: 11, fontFamily: "Inter_400Regular",
-      color: "#aaa", marginTop: 4, lineHeight: 18,
-    },
-    bottomActions: {
-      position: "absolute", bottom: 0, left: 0, right: 0,
-      flexDirection: "row", gap: 8,
-      padding: 12, paddingBottom: insets.bottom + 12,
-      backgroundColor: "#F0F2EE",
-    },
-    cancelBtn: {
-      flex: 1, height: 46, backgroundColor: "#fff",
-      borderWidth: 1, borderColor: "#ddd", borderRadius: 12,
-      alignItems: "center", justifyContent: "center",
-    },
-    cancelBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#888" },
-    printBtn: {
-      flex: 1.6, height: 46,
-      backgroundColor: colors.primary, borderRadius: 12,
-      flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
-    },
-    printBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" },
-  });
-
   return (
     <View style={s.container}>
       <View style={s.header}>
         <TouchableOpacity style={s.backBtn} onPress={handleClose} activeOpacity={0.7}>
-          <ArrowLeft size={18} color="#444" />
+          <ArrowLeft size={18} color={colors.foreground} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Cetak Nota</Text>
       </View>
@@ -243,7 +245,7 @@ export default function NotaScreen() {
           <Text style={s.cancelBtnText}>Batal</Text>
         </TouchableOpacity>
         <TouchableOpacity style={s.printBtn} onPress={handlePrint} activeOpacity={0.85}>
-          <Printer size={16} color="#fff" />
+          <Printer size={16} color={colors.primaryForeground} />
           <Text style={s.printBtnText}>Cetak Nota</Text>
         </TouchableOpacity>
       </View>

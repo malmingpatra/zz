@@ -27,33 +27,127 @@ import { useColors } from "@/hooks/useColors";
 import { useDatabase } from "@/context/DatabaseContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/context/firebase-setup";
-import ConfirmationModal from "@/components/ConfirmationModal";
+import ConfirmationModal from "@/app/universal/components/ConfirmationModal";
 
 function fmt(n?: number) {
   if (typeof n !== "number") n = 0;
   return "Rp " + n.toLocaleString("id-ID");
 }
 
-const STATUS_META: Record<string, { bg: string; text: string; label: string }> = {
-  menunggu:   { bg: "#FAEEDA", text: "#854F0B", label: "Menunggu" },
-  diproses:   { bg: "#E6F1FB", text: "#0C447C", label: "Diproses" },
-  dikirim:    { bg: "#E6F6FB", text: "#0C5A7C", label: "Dikirim" },
-  selesai:    { bg: "#EAF3DE", text: "#27500A", label: "Selesai" },
-  dibatalkan: { bg: "#FCEBEB", text: "#791F1F", label: "Dibatalkan" },
-};
+// Status meta defined inside component
 
 export default function DetailPesananScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+
+  const STATUS_META: Record<string, { bg: string; text: string; label: string }> = {
+    menunggu:   { bg: colors.stokWarnBg, text: colors.stokWarnText, label: "Menunggu" },
+    diproses:   { bg: colors.secondary, text: colors.foreground, label: "Diproses" },
+    dikirim:    { bg: colors.secondary, text: colors.foreground, label: "Dikirim" }, // Using same for now
+    selesai:    { bg: colors.stokOkBg, text: colors.stokOkText, label: "Selesai" },
+    dibatalkan: { bg: colors.destructive + "15", text: colors.destructive, label: "Dibatalkan" },
+  };
+
+  const s = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    header: {
+      backgroundColor: colors.card,
+      paddingTop: insets.top + 10,
+      paddingBottom: 14,
+      paddingHorizontal: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    backBtn: {
+      width: 36, height: 36, borderRadius: 10,
+      backgroundColor: colors.secondary,
+      alignItems: "center", justifyContent: "center",
+    },
+    headerInfo: { flex: 1 },
+    headerTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground },
+    headerSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground, marginTop: 1, letterSpacing: 0.3 },
+    statusBadge: {
+      fontSize: 11, fontFamily: "Inter_600SemiBold",
+      paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, overflow: "hidden",
+    },
+    scroll: { flex: 1 },
+    scrollContent: { padding: 12, gap: 10, paddingBottom: insets.bottom + 80 },
+    card: {
+      backgroundColor: colors.card, borderRadius: 14,
+      borderWidth: 1, borderColor: colors.border, padding: 14,
+    },
+    cardLabel: {
+      fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground,
+      textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10,
+    },
+    infoRow: {
+      flexDirection: "row", alignItems: "flex-start", gap: 10,
+      paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: colors.secondary,
+    },
+    infoRowLast: { borderBottomWidth: 0, paddingBottom: 0 },
+    infoIcon: {
+      width: 30, height: 30, borderRadius: 8,
+      backgroundColor: colors.secondary,
+      alignItems: "center", justifyContent: "center",
+    },
+    infoKey: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground, marginBottom: 2 },
+    infoValue: { fontSize: 13, fontFamily: "Inter_500Medium", color: colors.foreground },
+    productItem: {
+      flexDirection: "row", alignItems: "center", gap: 10,
+      paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: colors.secondary,
+    },
+    productItemLast: { borderBottomWidth: 0 },
+    productNum: {
+      width: 24, height: 24, borderRadius: 6,
+      backgroundColor: colors.primary + "15",
+      alignItems: "center", justifyContent: "center",
+    },
+    productNumText: { fontSize: 11, fontFamily: "Inter_700Bold", color: colors.primary },
+    productName: { fontSize: 13, fontFamily: "Inter_500Medium", color: colors.foreground },
+    productQty: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground, marginTop: 1 },
+    productPrice: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.primary },
+    totalRow: {
+      flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+      paddingTop: 10, marginTop: 6, borderTopWidth: 1, borderTopColor: colors.border,
+    },
+    totalLabel: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground },
+    totalValue: { fontSize: 16, fontFamily: "Inter_700Bold", color: colors.primary },
+    bottom: {
+      position: "absolute", bottom: 0, left: 0, right: 0,
+      flexDirection: "column", gap: 10,
+      padding: 16, paddingBottom: insets.bottom + 16,
+      backgroundColor: colors.card,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    outlineBtn: {
+      height: 48, backgroundColor: colors.card,
+      borderWidth: 1, borderColor: colors.border, borderRadius: 12,
+      flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
+      width: "100%",
+    },
+    outlineBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
+    primaryBtn: {
+      height: 48,
+      backgroundColor: colors.primary, borderRadius: 12,
+      flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
+      width: "100%",
+    },
+    primaryBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primaryForeground },
+  });
+
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { pesanan_id } = useLocalSearchParams<{ pesanan_id: string }>();
   const { orders, userProfile, updateOrderStatus } = useDatabase();
   const [loading, setLoading] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showUndoSendConfirm, setShowUndoSendConfirm] = useState(false);
   const currentUserName = userProfile?.displayName || "Staf";
 
-  const order = orders.find((o) => o.id === id);
+  const order = orders.find((o) => o.id === pesanan_id);
 
   const updateStatus = async (newStatus: "menunggu" | "dikirim" | "selesai" | "dibatalkan") => {
     if (!order) return;
@@ -75,96 +169,7 @@ export default function DetailPesananScreen() {
     }
   };
 
-  const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#F0F2EE" },
-    header: {
-      backgroundColor: "#fff",
-      paddingTop: insets.top + 10,
-      paddingBottom: 14,
-      paddingHorizontal: 16,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: "#ddd",
-    },
-    backBtn: {
-      width: 36, height: 36, borderRadius: 10,
-      backgroundColor: "#F5F5F5",
-      alignItems: "center", justifyContent: "center",
-    },
-    headerInfo: { flex: 1 },
-    headerTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1A1A1A" },
-    headerSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#888", marginTop: 1, letterSpacing: 0.3 },
-    statusBadge: {
-      fontSize: 11, fontFamily: "Inter_600SemiBold",
-      paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, overflow: "hidden",
-    },
-    scroll: { flex: 1 },
-    scrollContent: { padding: 12, gap: 10, paddingBottom: insets.bottom + 80 },
-    card: {
-      backgroundColor: "#fff", borderRadius: 14,
-      borderWidth: 1, borderColor: "#ddd", padding: 14,
-    },
-    cardLabel: {
-      fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#aaa",
-      textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10,
-    },
-    infoRow: {
-      flexDirection: "row", alignItems: "flex-start", gap: 10,
-      paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: "#F5F5F5",
-    },
-    infoRowLast: { borderBottomWidth: 0, paddingBottom: 0 },
-    infoIcon: {
-      width: 30, height: 30, borderRadius: 8,
-      backgroundColor: "#F5F5F5",
-      alignItems: "center", justifyContent: "center",
-    },
-    infoKey: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#aaa", marginBottom: 2 },
-    infoValue: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#1A1A1A" },
-    productItem: {
-      flexDirection: "row", alignItems: "center", gap: 10,
-      paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: "#F5F5F5",
-    },
-    productItemLast: { borderBottomWidth: 0 },
-    productNum: {
-      width: 24, height: 24, borderRadius: 6,
-      backgroundColor: "#EAF3DE",
-      alignItems: "center", justifyContent: "center",
-    },
-    productNumText: { fontSize: 11, fontFamily: "Inter_700Bold", color: colors.primary },
-    productName: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#1A1A1A" },
-    productQty: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#888", marginTop: 1 },
-    productPrice: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.primary },
-    totalRow: {
-      flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-      paddingTop: 10, marginTop: 6, borderTopWidth: 1, borderTopColor: "#EEE",
-    },
-    totalLabel: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A1A" },
-    totalValue: { fontSize: 16, fontFamily: "Inter_700Bold", color: colors.primary },
-    bottom: {
-      position: "absolute", bottom: 0, left: 0, right: 0,
-      flexDirection: "column", gap: 10,
-      padding: 16, paddingBottom: insets.bottom + 16,
-      backgroundColor: "#fff",
-      borderTopWidth: 1,
-      borderTopColor: "#EEE",
-    },
-    outlineBtn: {
-      height: 48, backgroundColor: "#fff",
-      borderWidth: 1, borderColor: "#ddd", borderRadius: 12,
-      flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
-      width: "100%",
-    },
-    outlineBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#444" },
-    primaryBtn: {
-      height: 48,
-      backgroundColor: colors.primary, borderRadius: 12,
-      flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
-      width: "100%",
-    },
-    primaryBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" },
-  });
+// Styles defined inside component
 
   if (!order) {
     return (
@@ -299,7 +304,7 @@ export default function DetailPesananScreen() {
             <TouchableOpacity
               style={s.outlineBtn}
               activeOpacity={0.8}
-              onPress={() => router.push(`/resi/${order.id}`)}
+              onPress={() => router.push(`/universal/resi/${order.id}`)}
               disabled={loading}
             >
               <Printer size={18} color="#888" />
@@ -339,7 +344,7 @@ export default function DetailPesananScreen() {
             <TouchableOpacity
               style={s.outlineBtn}
               activeOpacity={0.8}
-              onPress={() => router.push(`/resi/${order.id}`)}
+              onPress={() => router.push(`/universal/resi/${order.id}`)}
               disabled={loading}
             >
               <Printer size={18} color="#888" />
@@ -352,7 +357,7 @@ export default function DetailPesananScreen() {
           <TouchableOpacity
             style={s.outlineBtn}
             activeOpacity={0.8}
-            onPress={() => router.push(`/resi/${order.id}`)}
+            onPress={() => router.push(`/universal/resi/${order.id}`)}
             disabled={loading}
           >
             <Printer size={18} color="#888" />

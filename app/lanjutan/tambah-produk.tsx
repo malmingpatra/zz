@@ -21,6 +21,7 @@ import {
 } from "lucide-react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useColors } from "@/hooks/useColors";
+import { useAutoCloseDialog, DialogOverlay } from "@/app/universal/components/DialogOverlay";
 
 import { useDatabase } from "@/context/DatabaseContext";
 
@@ -32,6 +33,7 @@ export default function TambahProdukScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { addProduct, updateProduct, deleteProduct, products } = useDatabase();
+  const { dialogContext, setDialogContext } = useAutoCloseDialog();
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
@@ -49,7 +51,7 @@ export default function TambahProdukScreen() {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace({ pathname: "/(admin)/dashboard", params: { tab: "produk" } });
+      router.replace({ pathname: "/lanjutan/dashboard", params: { tab: "produk" } });
     }
   };
 
@@ -68,11 +70,10 @@ export default function TambahProdukScreen() {
 
   async function handleSubmit() {
     if (!name.trim() || !category.trim() || !stock || !price) {
-      if (Platform.OS === "web") {
-        window.alert("Mohon lengkapi Nama, Kategori, Stok, dan Harga.");
-      } else {
-        Alert.alert("Lengkapi Data", "Mohon lengkapi Nama, Kategori, Stok, dan Harga.");
-      }
+      setDialogContext({
+        title: "Lengkapi Data",
+        message: "Mohon lengkapi Nama, Kategori, Stok, dan Harga."
+      });
       return;
     }
 
@@ -88,14 +89,12 @@ export default function TambahProdukScreen() {
           stockStatus: parseInt(stock, 10) > 10 ? "ok" : "warn",
           desc: desc.trim(),
         });
-        if (Platform.OS === "web") {
-          window.alert(`Produk "${name}" berhasil diperbarui!`);
-          tryGoBack();
-        } else {
-          Alert.alert("Berhasil", `Produk "${name}" berhasil diperbarui!`, [
-            { text: "OK", onPress: () => tryGoBack() },
-          ]);
-        }
+        setDialogContext({
+          title: "Berhasil",
+          message: `Produk "${name}" berhasil diperbarui!`,
+          onCancel: tryGoBack,
+          onConfirm: tryGoBack
+        });
       } else {
         await addProduct({
           id: "prod-" + Date.now().toString(),
@@ -106,21 +105,18 @@ export default function TambahProdukScreen() {
           stockStatus: parseInt(stock, 10) > 10 ? "ok" : "warn",
           desc: desc.trim(),
         });
-        if (Platform.OS === "web") {
-          window.alert(`Produk "${name}" berhasil ditambahkan!`);
-          tryGoBack();
-        } else {
-          Alert.alert("Berhasil", `Produk "${name}" berhasil ditambahkan!`, [
-            { text: "OK", onPress: () => tryGoBack() },
-          ]);
-        }
+        setDialogContext({
+          title: "Berhasil",
+          message: `Produk "${name}" berhasil ditambahkan!`,
+          onCancel: tryGoBack,
+          onConfirm: tryGoBack
+        });
       }
     } catch (e: any) {
-      if (Platform.OS === "web") {
-        window.alert(`Gagal ${isEdit ? "memperbarui" : "menambahkan"}: ` + e.message);
-      } else {
-        Alert.alert("Error", e.message);
-      }
+      setDialogContext({
+        title: "Error",
+        message: `Gagal ${isEdit ? "memperbarui" : "menambahkan"}: ` + e.message
+      });
     }
   }
 
@@ -128,20 +124,24 @@ export default function TambahProdukScreen() {
     const productId = Array.isArray(id) ? id[0] : id;
     try {
       await deleteProduct(productId);
-      router.replace({ pathname: "/(admin)/dashboard", params: { tab: "produk" } });
+      setDialogContext({
+        title: "Berhasil",
+        message: "Produk berhasil dihapus!",
+        onCancel: () => router.replace({ pathname: "/lanjutan/dashboard", params: { tab: "produk" } }),
+        onConfirm: () => router.replace({ pathname: "/lanjutan/dashboard", params: { tab: "produk" } })
+      });
     } catch (e: any) {
-      if (Platform.OS === "web") {
-        window.alert("Gagal menghapus: " + e.message);
-      } else {
-        Alert.alert("Error", e.message);
-      }
+      setDialogContext({
+        title: "Error",
+        message: "Gagal menghapus: " + e.message
+      });
     }
   }
 
   const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#F0F2EE" },
+    container: { flex: 1, backgroundColor: colors.background },
     header: {
-      backgroundColor: "#fff",
+      backgroundColor: colors.card,
       paddingTop: insets.top + 8,
       paddingBottom: 14,
       paddingHorizontal: 16,
@@ -149,57 +149,57 @@ export default function TambahProdukScreen() {
       alignItems: "center",
       gap: 12,
       borderBottomWidth: 1,
-      borderBottomColor: "#ddd",
+      borderBottomColor: colors.border,
     },
     backBtn: {
       width: 36, height: 36, borderRadius: 10,
-      backgroundColor: "#F5F5F5",
+      backgroundColor: colors.secondary,
       alignItems: "center", justifyContent: "center",
     },
-    headerTitle: { flex: 1, fontSize: 15, fontFamily: "Inter_700Bold", color: "#1A1A1A" },
+    headerTitle: { flex: 1, fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground },
     scroll: { flex: 1 },
     scrollContent: { padding: 14, gap: 10, paddingBottom: insets.bottom + 80 },
     fieldGroup: {
-      backgroundColor: "#fff", borderRadius: 14,
-      borderWidth: 1, borderColor: "#ddd",
+      backgroundColor: colors.card, borderRadius: 14,
+      borderWidth: 1, borderColor: colors.border,
       overflow: "hidden",
     },
     fieldRow: {
       flexDirection: "row", alignItems: "center",
       paddingHorizontal: 14, minHeight: 52,
-      borderBottomWidth: 1, borderBottomColor: "#F5F5F5",
+      borderBottomWidth: 1, borderBottomColor: colors.secondary,
     },
     fieldRowLast: { borderBottomWidth: 0 },
-    fieldRowFocused: { backgroundColor: "#F9FDF9" },
+    fieldRowFocused: { backgroundColor: colors.secondary + "20" },
     fieldIcon: {
       width: 32, alignItems: "center", justifyContent: "center",
     },
     fieldInner: { flex: 1, paddingVertical: 8, paddingHorizontal: 10 },
-    fieldLabel: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#aaa", marginBottom: 2 },
+    fieldLabel: { fontSize: 11, fontFamily: "Inter_500Medium", color: colors.mutedForeground, marginBottom: 2 },
     fieldInput: {
-      fontSize: 14, fontFamily: "Inter_400Regular", color: "#1A1A1A",
+      fontSize: 14, fontFamily: "Inter_400Regular", color: colors.foreground,
       padding: 0,
       ...(Platform.OS === "web" ? ({ outlineWidth: 0 } as object) : {}),
     },
     halfRow: { flexDirection: "row", gap: 10 },
-    prefixText: { fontSize: 14, fontFamily: "Inter_500Medium", color: "#aaa", paddingRight: 3 },
+    prefixText: { fontSize: 14, fontFamily: "Inter_500Medium", color: colors.mutedForeground, paddingRight: 3 },
     textArea: {
-      fontSize: 14, fontFamily: "Inter_400Regular", color: "#1A1A1A",
+      fontSize: 14, fontFamily: "Inter_400Regular", color: colors.foreground,
       padding: 0, minHeight: 72, lineHeight: 22,
       ...(Platform.OS === "web" ? ({ outlineWidth: 0 } as object) : {}),
     },
     catChipsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingTop: 6 },
     catChip: {
       paddingHorizontal: 12, paddingVertical: 6,
-      borderRadius: 20, borderWidth: 1, borderColor: "#ddd",
-      backgroundColor: "#F9F9F9",
+      borderRadius: 20, borderWidth: 1, borderColor: colors.border,
+      backgroundColor: colors.card,
     },
     catChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-    catChipText: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#666" },
-    catChipTextActive: { color: "#fff" },
+    catChipText: { fontSize: 12, fontFamily: "Inter_500Medium", color: colors.mutedForeground },
+    catChipTextActive: { color: colors.primaryForeground },
     optionalTag: {
-      fontSize: 10, fontFamily: "Inter_500Medium", color: "#aaa",
-      backgroundColor: "#F5F5F5", paddingHorizontal: 7, paddingVertical: 2,
+      fontSize: 10, fontFamily: "Inter_500Medium", color: colors.mutedForeground,
+      backgroundColor: colors.secondary, paddingHorizontal: 7, paddingVertical: 2,
       borderRadius: 20, marginLeft: 4, overflow: "hidden",
     },
     labelRow: { flexDirection: "row", alignItems: "center" },
@@ -207,26 +207,26 @@ export default function TambahProdukScreen() {
       position: "absolute", bottom: 0, left: 0, right: 0,
       flexDirection: "column", gap: 8,
       padding: 12, paddingBottom: insets.bottom + 12,
-      backgroundColor: "#F0F2EE",
+      backgroundColor: colors.background,
     },
     cancelBtn: {
-      height: 46, backgroundColor: "#fff",
-      borderWidth: 1, borderColor: "#ddd", borderRadius: 12,
+      height: 46, backgroundColor: colors.card,
+      borderWidth: 1, borderColor: colors.border, borderRadius: 12,
       alignItems: "center", justifyContent: "center", flex: 1,
     },
-    cancelBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#888" },
+    cancelBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
     deleteBtn: {
-      height: 46, backgroundColor: "#FCEBEB",
-      borderWidth: 1, borderColor: "#FCEBEB", borderRadius: 12,
+      height: 46, backgroundColor: colors.destructive + "15",
+      borderWidth: 1, borderColor: colors.destructive + "30", borderRadius: 12,
       alignItems: "center", justifyContent: "center", flex: 1,
     },
-    deleteBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#791F1F" },
+    deleteBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.destructive },
     addBtn: {
       height: 46,
       backgroundColor: colors.primary, borderRadius: 12,
       flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, flex: 1,
     },
-    addBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" },
+    addBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primaryForeground },
     addBtnBlock: {
       height: 46,
       backgroundColor: colors.primary, borderRadius: 12,
@@ -235,7 +235,7 @@ export default function TambahProdukScreen() {
   });
 
   function iconColor(field: string) {
-    return focusedField === field ? colors.primary : "#bbb";
+    return focusedField === field ? colors.primary : colors.mutedForeground + "80";
   }
 
   return (
@@ -402,6 +402,8 @@ export default function TambahProdukScreen() {
           </View>
         )}
       </View>
+      {/* Dialog Overlay */}
+      <DialogOverlay context={dialogContext} onClose={() => setDialogContext(null)} />
     </View>
   );
 }

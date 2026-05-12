@@ -44,7 +44,7 @@ export default function LoginScreen() {
         signInWithEmailLink(auth, emailForSignIn, window.location.href)
           .then((result) => {
             window.localStorage.removeItem('emailForSignIn');
-            router.replace("/(pos)/");
+            router.replace("/universal/");
           })
           .catch((error) => {
             alert("Error sign in with magic link: " + error.message);
@@ -57,7 +57,7 @@ export default function LoginScreen() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      router.replace("/(pos)/");
+      router.replace("/universal/");
     } catch (error) {
       console.error("Login failed", error);
     }
@@ -77,7 +77,7 @@ export default function LoginScreen() {
         const { sendSignInLinkToEmail } = require("firebase/auth");
         window.localStorage.setItem('emailForSignIn', trimmed);
         await sendSignInLinkToEmail(auth, trimmed, {
-          url: window.location.origin + "/login",
+          url: window.location.origin + "/universal/login",
           handleCodeInApp: true
         });
       }
@@ -99,7 +99,7 @@ export default function LoginScreen() {
   const s = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: "#F5F4F0",
+      backgroundColor: colors.background,
     },
     scroll: {
       flex: 1,
@@ -122,20 +122,20 @@ export default function LoginScreen() {
       width: 36,
       height: 36,
       borderRadius: 10,
-      backgroundColor: "#fff",
+      backgroundColor: colors.card,
       borderWidth: 1,
-      borderColor: "#E2DFD8",
+      borderColor: colors.border,
       alignItems: "center",
       justifyContent: "center",
     },
     card: {
-      backgroundColor: "#fff",
+      backgroundColor: colors.card,
       borderRadius: 20,
       padding: 24,
       width: "100%",
       maxWidth: 400,
       borderWidth: 1,
-      borderColor: "#D8D6CC",
+      borderColor: colors.border,
     },
     brandIcon: {
       width: 50,
@@ -149,14 +149,14 @@ export default function LoginScreen() {
     title: {
       fontSize: 22,
       fontFamily: "Inter_700Bold",
-      color: "#1A1A18",
+      color: colors.foreground,
       marginBottom: 4,
       letterSpacing: -0.3,
     },
     sub: {
       fontSize: 13,
       fontFamily: "Inter_400Regular",
-      color: "#7A7870",
+      color: colors.mutedForeground,
       marginBottom: 28,
     },
     googleBtn: {
@@ -166,16 +166,16 @@ export default function LoginScreen() {
       gap: 10,
       width: "100%",
       paddingVertical: 13,
-      backgroundColor: "#fff",
+      backgroundColor: colors.card,
       borderWidth: 1.5,
-      borderColor: "#DDDAD2",
+      borderColor: colors.border,
       borderRadius: 12,
       marginBottom: 16,
     },
     googleBtnText: {
       fontSize: 14,
       fontFamily: "Inter_600SemiBold",
-      color: "#1A1A18",
+      color: colors.foreground,
     },
     divider: {
       flexDirection: "row",
@@ -186,17 +186,17 @@ export default function LoginScreen() {
     dividerLine: {
       flex: 1,
       height: 1,
-      backgroundColor: "#E2DFD8",
+      backgroundColor: colors.border,
     },
     dividerText: {
       fontSize: 12,
       fontFamily: "Inter_400Regular",
-      color: "#B0ADA6",
+      color: colors.mutedForeground,
     },
     fieldLabel: {
       fontSize: 12,
       fontFamily: "Inter_600SemiBold",
-      color: "#4A4840",
+      color: colors.mutedForeground,
       textTransform: "uppercase",
       letterSpacing: 0.5,
       marginBottom: 6,
@@ -205,22 +205,22 @@ export default function LoginScreen() {
       flexDirection: "row",
       alignItems: "center",
       borderWidth: 1.5,
-      borderColor: "#DDDAD2",
+      borderColor: colors.border,
       borderRadius: 10,
-      backgroundColor: "#FAF9F6",
+      backgroundColor: colors.background,
       paddingHorizontal: 12,
       marginBottom: 16,
       height: 44,
       gap: 8,
     },
     fieldWrapError: {
-      borderColor: "#E24B4A",
+      borderColor: colors.destructive,
     },
     fieldInput: {
       flex: 1,
       fontSize: 14,
       fontFamily: "Inter_400Regular",
-      color: "#1A1A18",
+      color: colors.foreground,
       padding: 0,
       ...(Platform.OS === "web" ? ({ outlineWidth: 0 } as object) : {}),
     },
@@ -235,23 +235,23 @@ export default function LoginScreen() {
       borderRadius: 12,
     },
     primaryBtnDisabled: {
-      backgroundColor: "#8ABDA1",
+      backgroundColor: colors.mutedForeground,
     },
     primaryBtnText: {
       fontSize: 14,
       fontFamily: "Inter_600SemiBold",
-      color: "#fff",
+      color: colors.primaryForeground,
     },
     footerNote: {
       marginTop: 16,
       textAlign: "center",
       fontSize: 12,
       fontFamily: "Inter_400Regular",
-      color: "#B0ADA6",
+      color: colors.mutedForeground,
       lineHeight: 20,
     },
     successBox: {
-      backgroundColor: "#EEF7F2",
+      backgroundColor: colors.stokOkBg,
       borderRadius: 14,
       padding: 20,
       alignItems: "center",
@@ -268,11 +268,11 @@ export default function LoginScreen() {
     successTitle: {
       fontSize: 16,
       fontFamily: "Inter_700Bold",
-      color: "#1A1A18",
+      color: colors.foreground,
       marginBottom: 6,
     },
     emailPill: {
-      backgroundColor: "#D4ECE0",
+      backgroundColor: colors.stokOkBorder,
       paddingHorizontal: 14,
       paddingVertical: 4,
       borderRadius: 20,
@@ -281,12 +281,12 @@ export default function LoginScreen() {
     emailPillText: {
       fontSize: 13,
       fontFamily: "Inter_700Bold",
-      color: colors.primary,
+      color: colors.stokOkText,
     },
     successDesc: {
       fontSize: 13,
       fontFamily: "Inter_400Regular",
-      color: "#4A7A5E",
+      color: colors.stokOkText,
       textAlign: "center",
       lineHeight: 20,
       marginBottom: 16,
@@ -300,20 +300,20 @@ export default function LoginScreen() {
       paddingVertical: 11,
       backgroundColor: "transparent",
       borderWidth: 1.5,
-      borderColor: "#DDDAD2",
+      borderColor: colors.border,
       borderRadius: 10,
       marginTop: 8,
     },
     ghostBtnText: {
       fontSize: 13,
       fontFamily: "Inter_500Medium",
-      color: "#7A7870",
+      color: colors.mutedForeground,
     },
     hint: {
       flexDirection: "row",
       alignItems: "center",
       gap: 10,
-      backgroundColor: "#EEF7F2",
+      backgroundColor: colors.stokOkBg,
       borderRadius: 12,
       padding: 12,
       marginTop: 16,
@@ -324,7 +324,7 @@ export default function LoginScreen() {
       flex: 1,
       fontSize: 12,
       fontFamily: "Inter_400Regular",
-      color: "#2D6B4A",
+      color: colors.stokOkText,
     },
   });
 
@@ -333,13 +333,13 @@ export default function LoginScreen() {
       <ScrollView style={s.scroll} contentContainerStyle={s.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={s.backRow}>
           <TouchableOpacity style={s.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
-            <ArrowLeft size={18} color="#444" />
+            <ArrowLeft size={18} color={colors.foreground} />
           </TouchableOpacity>
         </View>
 
         <View style={s.card}>
           <View style={s.brandIcon}>
-            <ShoppingCart size={22} color="#fff" />
+            <ShoppingCart size={22} color={colors.primaryForeground} />
           </View>
           <Text style={s.title}>Selamat Datang</Text>
           <Text style={s.sub}>Pilih cara masuk ke akun toko Anda</Text>
@@ -347,7 +347,7 @@ export default function LoginScreen() {
           {view === "main" ? (
             <>
               <TouchableOpacity style={s.googleBtn} activeOpacity={0.8} onPress={handleGoogleLogin}>
-                <GoogleIcon />
+                <GoogleIcon colors={colors} />
                 <Text style={s.googleBtnText}>Lanjutkan dengan Google</Text>
               </TouchableOpacity>
 
@@ -359,13 +359,13 @@ export default function LoginScreen() {
 
               <Text style={s.fieldLabel}>Alamat Email</Text>
               <View style={[s.fieldWrap, emailError && s.fieldWrapError]}>
-                <Mail size={16} color="#AAA89E" />
+                <Mail size={16} color={colors.mutedForeground} />
                 <TextInput
                   style={s.fieldInput}
                   value={email}
                   onChangeText={setEmail}
                   placeholder="nama@email.com"
-                  placeholderTextColor="#C0BDB5"
+                  placeholderTextColor={colors.mutedForeground}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   underlineColorAndroid="transparent"
@@ -379,10 +379,10 @@ export default function LoginScreen() {
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color={colors.primaryForeground} />
                 ) : (
                   <>
-                    <Send size={15} color="#fff" />
+                    <Send size={15} color={colors.primaryForeground} />
                     <Text style={s.primaryBtnText}>Kirim Magic Link</Text>
                   </>
                 )}
@@ -395,7 +395,7 @@ export default function LoginScreen() {
           ) : (
             <View style={s.successBox}>
               <View style={s.successIcon}>
-                <Mail size={24} color="#fff" />
+                <Mail size={24} color={colors.primaryForeground} />
               </View>
               <Text style={s.successTitle}>Cek Email Anda!</Text>
               <View style={s.emailPill}>
@@ -409,11 +409,11 @@ export default function LoginScreen() {
                 onPress={() => router.back()}
                 activeOpacity={0.85}
               >
-                  <Check size={15} color="#fff" />
+                  <Check size={15} color={colors.primaryForeground} />
                   <Text style={s.primaryBtnText}>Saya sudah klik linknya</Text>
               </TouchableOpacity>
               <TouchableOpacity style={s.ghostBtn} onPress={handleBack} activeOpacity={0.8}>
-                <ArrowLeft size={14} color="#7A7870" />
+                <ArrowLeft size={14} color={colors.mutedForeground} />
                 <Text style={s.ghostBtnText}>Ganti email / coba lagi</Text>
               </TouchableOpacity>
             </View>
@@ -429,10 +429,10 @@ export default function LoginScreen() {
   );
 }
 
-function GoogleIcon() {
+function GoogleIcon({ colors }: { colors: any }) {
   return (
     <View style={{ width: 19, height: 19 }}>
-      <Text style={{ fontSize: 16, lineHeight: 19 }}>G</Text>
+      <Text style={{ fontSize: 16, lineHeight: 19, color: colors.foreground }}>G</Text>
     </View>
   );
 }

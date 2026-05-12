@@ -19,9 +19,10 @@ import { auth, db } from "@/context/firebase-setup";
 import { signOut, updateProfile } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 import { useDatabase } from "@/context/DatabaseContext";
+import { useAutoCloseDialog, DialogOverlay } from "@/app/universal/components/DialogOverlay";
 import * as LucideIcons from "lucide-react-native";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import ConfirmationModal from "@/components/ConfirmationModal";
+import ConfirmationModal from "@/app/universal/components/ConfirmationModal";
 import { 
   ArrowLeft, 
   User, 
@@ -81,8 +82,19 @@ function fmt(n: number) {
 
 export default function ProfilScreen() {
   const colors = useColors();
+
+  const STATUS_META: Record<string, { bg: string; text: string; label: string }> = {
+    menunggu:   { bg: colors.stokWarnBg, text: colors.stokWarnText, label: "Menunggu" },
+    diproses:   { bg: colors.secondary, text: colors.foreground, label: "Diproses" },
+    dikirim:    { bg: colors.secondary, text: colors.foreground, label: "Dikirim" },
+    selesai:    { bg: colors.stokOkBg, text: colors.stokOkText, label: "Selesai" },
+    dibatalkan: { bg: colors.destructive + "15", text: colors.destructive, label: "Dibatalkan" },
+  };
+
   const insets = useSafeAreaInsets();
   const router = useRouter();
+
+  const { dialogContext, setDialogContext } = useAutoCloseDialog();
   const { orders, members, bantuan, userProfile, updateOrderStatus } = useDatabase();
 
   const [tab, setTab] = useState<Tab>("profil");
@@ -133,10 +145,10 @@ export default function ProfilScreen() {
         address: alamat,
       });
 
-      Alert.alert("Sukses", "Profil berhasil diperbarui!");
-    } catch (e) {
+      setDialogContext({ title: "Sukses", message: "Profil berhasil diperbarui!" });
+    } catch (e: any) {
       console.error("Error updating profile:", e);
-      Alert.alert("Error", "Gagal memperbarui profil: " + (e as Error).message);
+      setDialogContext({ title: "Error", message: "Gagal memperbarui profil: " + e.message });
     } finally {
       setTimeout(() => setLoading(false), 500);
     }
@@ -150,10 +162,10 @@ export default function ProfilScreen() {
       await updateDoc(userRef, {
         theme: selectedTheme,
       });
-      Alert.alert("Sukses", "Tema berhasil diterapkan!");
+      setDialogContext({ title: "Sukses", message: "Tema berhasil diterapkan!" });
     } catch (e) {
       console.error("Error updating theme:", e);
-      Alert.alert("Error", "Gagal menerapkan tema");
+      setDialogContext({ title: "Error", message: "Gagal menerapkan tema" });
     } finally {
       setLoading(false);
     }
@@ -186,7 +198,7 @@ export default function ProfilScreen() {
   };
 
   const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#F5F4F0" },
+    container: { flex: 1, backgroundColor: colors.background },
     topbar: {
       backgroundColor: colors.primary,
       paddingTop: insets.top + 10,
@@ -196,14 +208,14 @@ export default function ProfilScreen() {
       alignItems: "center",
       gap: 12,
     },
-    topbarTitle: { flex: 1, fontSize: 16, fontFamily: "Inter_700Bold", color: "#fff" },
+    topbarTitle: { flex: 1, fontSize: 16, fontFamily: "Inter_700Bold", color: colors.primaryForeground },
     topbarBadge: {
       backgroundColor: "rgba(255,255,255,0.2)",
       paddingHorizontal: 10,
       paddingVertical: 3,
       borderRadius: 20,
     },
-    topbarBadgeText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#fff" },
+    topbarBadgeText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.primaryForeground },
     avatarArea: {
       backgroundColor: colors.primary,
       paddingBottom: 24,
@@ -212,7 +224,7 @@ export default function ProfilScreen() {
     },
     avatarCircle: {
       width: 72, height: 72,
-      backgroundColor: "#D4ECE0",
+      backgroundColor: colors.secondary,
       borderRadius: 36,
       alignItems: "center",
       justifyContent: "center",
@@ -220,13 +232,13 @@ export default function ProfilScreen() {
       borderColor: "rgba(255,255,255,0.3)",
     },
     avatarInitials: { fontSize: 26, fontFamily: "Inter_700Bold", color: colors.primary },
-    avatarName: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#fff" },
+    avatarName: { fontSize: 16, fontFamily: "Inter_700Bold", color: colors.primaryForeground },
     avatarRole: { fontSize: 12, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.7)" },
     tabsRow: {
       flexDirection: "row",
-      backgroundColor: "#fff",
+      backgroundColor: colors.card,
       borderBottomWidth: 1,
-      borderBottomColor: "#E2DFD8",
+      borderBottomColor: colors.border,
     },
     tabBtn: {
       flex: 1,
@@ -236,36 +248,36 @@ export default function ProfilScreen() {
       borderBottomColor: "transparent",
     },
     tabBtnActive: { borderBottomColor: colors.primary },
-    tabBtnText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#7A7870" },
+    tabBtnText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
     tabBtnTextActive: { color: colors.primary },
     pane: { flex: 1 },
     paneContent: { padding: 16 },
     secLabel: {
-      fontSize: 11, fontFamily: "Inter_700Bold", color: "#9A9890",
+      fontSize: 11, fontFamily: "Inter_700Bold", color: colors.mutedForeground,
       textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10,
     },
     card: {
-      backgroundColor: "#fff", borderRadius: 16,
-      borderWidth: 1, borderColor: "#DDDAD2",
+      backgroundColor: colors.card, borderRadius: 16,
+      borderWidth: 1, borderColor: colors.border,
       overflow: "hidden", marginBottom: 14,
     },
     fieldRow: {
       padding: 12,
-      borderBottomWidth: 1, borderBottomColor: "#F0EDE6",
+      borderBottomWidth: 1, borderBottomColor: colors.border,
     },
     fieldRowLast: { borderBottomWidth: 0 },
     fieldLabel: {
-      fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#4A4840",
+      fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground,
       textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6,
     },
     fieldWrap: {
       flexDirection: "row", alignItems: "center",
-      borderWidth: 1.5, borderColor: "#DDDAD2",
-      borderRadius: 10, backgroundColor: "#FAF9F6",
+      borderWidth: 1.5, borderColor: colors.border,
+      borderRadius: 10, backgroundColor: colors.background,
       paddingHorizontal: 10, height: 40, gap: 8,
     },
     fieldInput: {
-      flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: "#1A1A18",
+      flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: colors.foreground,
       padding: 0,
       ...(Platform.OS === "web" ? ({ outlineWidth: 0 } as object) : {}),
     },
@@ -274,13 +286,13 @@ export default function ProfilScreen() {
       backgroundColor: colors.primary, borderRadius: 12, paddingVertical: 12,
       marginBottom: 8,
     },
-    primaryBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#fff" },
+    primaryBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: colors.primaryForeground },
     dangerBtn: {
       flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
-      backgroundColor: "#fff", borderRadius: 12, paddingVertical: 12,
-      borderWidth: 1.5, borderColor: "#F7C1C1", marginBottom: 8,
+      backgroundColor: colors.card, borderRadius: 12, paddingVertical: 12,
+      borderWidth: 1.5, borderColor: colors.destructive + "40", marginBottom: 8,
     },
-    dangerBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#E24B4A" },
+    dangerBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: colors.destructive },
     outlineBtn: {
       flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
       backgroundColor: "#fff", borderRadius: 12, paddingVertical: 12,
@@ -289,18 +301,18 @@ export default function ProfilScreen() {
     outlineBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: colors.primary },
     orderItem: {
       flexDirection: "row", alignItems: "center", gap: 10,
-      padding: 12, borderBottomWidth: 1, borderBottomColor: "#F0EDE6",
+      padding: 12, borderBottomWidth: 1, borderBottomColor: colors.border,
     },
     orderItemLast: { borderBottomWidth: 0 },
     orderIcon: {
-      width: 36, height: 36, backgroundColor: "#EEF7F2",
+      width: 36, height: 36, backgroundColor: colors.secondary,
       borderRadius: 10, alignItems: "center", justifyContent: "center",
     },
     orderInfo: { flex: 1, minWidth: 0 },
     orderName: {
-      fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#1A1A18",
+      fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.foreground,
     },
-    orderDate: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#9A9890", marginTop: 2 },
+    orderDate: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground, marginTop: 2 },
     orderRight: { alignItems: "flex-end" },
     orderPrice: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primary },
     badgeSelesai: { backgroundColor: "#EEF7F2", color: "#1A6B47" },
@@ -316,42 +328,42 @@ export default function ProfilScreen() {
     },
     themeSectionLabel: {
       fontSize: 12, fontFamily: "Inter_600SemiBold",
-      color: "#6A6A66", marginBottom: 8, marginTop: 4,
+      color: colors.mutedForeground, marginBottom: 8, marginTop: 4,
       textTransform: "uppercase", letterSpacing: 0.5,
     },
     themeCard: {
       width: "47%", flexDirection: "row", alignItems: "center", gap: 10,
-      backgroundColor: "#FFFFFF", borderRadius: 12,
-      borderWidth: 2, borderColor: "#E2DFD8", padding: 12,
+      backgroundColor: colors.card, borderRadius: 12,
+      borderWidth: 2, borderColor: colors.border, padding: 12,
     },
     themeCardDark: {
-      backgroundColor: "#1E1E1C",
-      borderColor: "#3A3A38",
+      backgroundColor: colors.background,
+      borderColor: colors.border,
     },
     themeCardActive: { borderColor: colors.primary },
     themeDot: { width: 28, height: 28, borderRadius: 14 },
-    themeName: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#1A1A18" },
-    themeSub: { fontSize: 10, fontFamily: "Inter_400Regular", color: "#9A9890" },
+    themeName: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.foreground },
+    themeSub: { fontSize: 10, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
     helpItem: {
       flexDirection: "row", alignItems: "center", gap: 12,
-      padding: 13, borderBottomWidth: 1, borderBottomColor: "#F0EDE6",
+      padding: 13, borderBottomWidth: 1, borderBottomColor: colors.border,
     },
     helpItemLast: { borderBottomWidth: 0 },
     helpDot: {
-      width: 38, height: 38, backgroundColor: "#EEF7F2",
+      width: 38, height: 38, backgroundColor: colors.secondary,
       borderRadius: 10, alignItems: "center", justifyContent: "center",
     },
     helpInfo: { flex: 1 },
-    helpTitle: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A18" },
-    helpDesc: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#9A9890", marginTop: 1 },
+    helpTitle: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground },
+    helpDesc: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground, marginTop: 1 },
     searchRow: { flexDirection: "row", gap: 10, marginBottom: 14 },
     searchWrap: { 
       flex: 1, flexDirection: "row", alignItems: "center", gap: 8,
-      backgroundColor: "#fff", borderRadius: 12, borderWidth: 1, borderColor: "#DDDAD2",
+      backgroundColor: colors.card, borderRadius: 12, borderWidth: 1, borderColor: colors.border,
       height: 48, paddingHorizontal: 12
     },
     searchInput: { 
-      flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: "#1A1A18",
+      flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: colors.foreground,
       ...(Platform.OS === "web" ? { outlineWidth: 0 } as any : {})
     },
     filterBtn: {
@@ -361,32 +373,32 @@ export default function ProfilScreen() {
     paginationRow: {
       flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 14
     },
-    pageBtn: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: "#EAE8E0" },
+    pageBtn: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, backgroundColor: colors.secondary },
     pageBtnDisabled: { opacity: 0.5 },
-    pageBtnText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#4A4840" },
-    pageText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#1A1A18" },
+    pageBtnText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
+    pageText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.foreground },
     modalOverlay: {
       flex: 1, backgroundColor: "rgba(0,0,0,0.5)",
       justifyContent: "center", alignItems: "center", padding: 20
     },
     modalContent: {
-      backgroundColor: "#fff", borderRadius: 16, width: "100%", maxWidth: 400,
+      backgroundColor: colors.card, borderRadius: 16, width: "100%", maxWidth: 400,
       maxHeight: "80%", overflow: "hidden"
     },
     modalHeader: {
       flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-      padding: 16, borderBottomWidth: 1, borderBottomColor: "#EAE8E0"
+      padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border
     },
-    modalTitle: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#1A1A18" },
+    modalTitle: { fontSize: 16, fontFamily: "Inter_700Bold", color: colors.foreground },
     modalBody: { padding: 16 },
     modalScroll: { flexGrow: 0 },
-    detailLabel: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#9A9890", marginTop: 12, marginBottom: 4 },
-    detailValue: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#1A1A18" },
+    detailLabel: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground, marginTop: 12, marginBottom: 4 },
+    detailValue: { fontSize: 13, fontFamily: "Inter_500Medium", color: colors.foreground },
     detailItem: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
-    detailItemName: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#1A1A18", flex: 1 },
-    detailItemQty: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#9A9890", width: 40, textAlign: "center" },
-    detailItemPrice: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A18", width: 80, textAlign: "right" },
-    modalFooter: { padding: 16, borderTopWidth: 1, borderTopColor: "#EAE8E0" }
+    detailItemName: { fontSize: 13, fontFamily: "Inter_500Medium", color: colors.foreground, flex: 1 },
+    detailItemQty: { fontSize: 13, fontFamily: "Inter_400Regular", color: colors.mutedForeground, width: 40, textAlign: "center" },
+    detailItemPrice: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, width: 80, textAlign: "right" },
+    modalFooter: { padding: 16, borderTopWidth: 1, borderTopColor: colors.border }
   });
 
   const HELP_ITEMS = [
@@ -396,14 +408,6 @@ export default function ProfilScreen() {
     { icon: "alert-circle" as const, title: "Laporkan Masalah", desc: "Temukan bug? Beritahu kami" },
     { icon: "shield" as const, title: "Kebijakan Privasi", desc: "Perlindungan data pengguna" },
   ];
-
-  const STATUS_META: Record<string, { bg: string; text: string; label: string }> = {
-    menunggu:   { bg: "#FAEEDA", text: "#854F0B", label: "Menunggu" },
-    diproses:   { bg: "#E6F1FB", text: "#0C447C", label: "Diproses" },
-    dikirim:    { bg: "#E6F6FB", text: "#0C5A7C", label: "Dikirim" },
-    selesai:    { bg: "#EAF3DE", text: "#27500A", label: "Selesai" },
-    dibatalkan: { bg: "#FCEBEB", text: "#791F1F", label: "Dibatalkan" },
-  };
 
   function badgeStyle(status: string) {
     const meta = STATUS_META[status] || STATUS_META.menunggu;
@@ -475,13 +479,13 @@ export default function ProfilScreen() {
               ].map((f, i, arr) => (
                 <View key={f.label} style={[s.fieldRow, i === arr.length - 1 && s.fieldRowLast]}>
                   <Text style={s.fieldLabel}>{f.label}</Text>
-                  <View style={[s.fieldWrap, f.locked && { backgroundColor: "#F0F0F0", borderColor: "#DDD" }]}>
+                  <View style={[s.fieldWrap, f.locked && { backgroundColor: colors.secondary, borderColor: colors.border }]}>
                     {(() => {
                       const Icon = ICON_MAP[f.icon as keyof typeof ICON_MAP];
-                      return <Icon size={14} color="#AAA89E" />;
+                      return <Icon size={14} color={colors.mutedForeground} />;
                     })()}
                     <TextInput
-                      style={[s.fieldInput, f.locked && { color: "#888" }]}
+                      style={[s.fieldInput, f.locked && { color: colors.mutedForeground }]}
                       value={f.value}
                       onChangeText={f.onChange}
                       keyboardType={f.kb}
@@ -513,7 +517,7 @@ export default function ProfilScreen() {
             <TouchableOpacity style={s.dangerBtn} activeOpacity={0.85} onPress={async () => {
               try {
                 await signOut(auth);
-                router.replace("/login");
+                router.replace("/universal/login");
               } catch (e) {
                 console.error("Logout failed", e);
               }
@@ -529,11 +533,11 @@ export default function ProfilScreen() {
             <Text style={s.secLabel}>Riwayat Transaksi</Text>
             <View style={s.searchRow}>
               <View style={s.searchWrap}>
-                <Search size={18} color="#9A9890" />
+                <Search size={18} color={colors.mutedForeground} />
                 <TextInput 
                   style={s.searchInput}
                   placeholder="Cari ID transaksi atau nama item..."
-                  placeholderTextColor="#9A9890"
+                  placeholderTextColor={colors.mutedForeground}
                   value={searchQuery}
                   onChangeText={(val) => {
                     setSearchQuery(val);
@@ -578,11 +582,11 @@ export default function ProfilScreen() {
               </TouchableOpacity>
               {Platform.OS !== 'web' && filterDate !== "" && (
                 <TouchableOpacity 
-                  style={{...s.filterBtn, backgroundColor: '#EAE8E0', marginLeft: 8}}
+                   style={[s.filterBtn, { backgroundColor: colors.secondary, marginLeft: 8 }]}
                   activeOpacity={0.8}
                   onPress={() => { setFilterDate(""); setCurrentPage(1); }}
                 >
-                  <X size={20} color="#1A1A18" />
+                  <X size={20} color={colors.foreground} />
                 </TouchableOpacity>
               )}
             </View>
@@ -592,6 +596,7 @@ export default function ProfilScreen() {
                 value={filterDate ? new Date(filterDate) : new Date()}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                themeVariant={colors.isDark ? 'dark' : 'light'}
                 onChange={(event: DateTimePickerEvent, date?: Date) => {
                   if (Platform.OS !== 'ios') setShowDatePicker(false);
                   if (date) {
@@ -630,7 +635,7 @@ export default function ProfilScreen() {
                 </TouchableOpacity>
               ))}
               {paginatedOrders.length === 0 && (
-                <Text style={{ padding: 16, textAlign: "center", color: "#666" }}>
+                <Text style={{ padding: 16, textAlign: "center", color: colors.mutedForeground }}>
                   Tida ada pesanan yang sesuai.
                 </Text>
               )}
@@ -770,7 +775,7 @@ export default function ProfilScreen() {
             <View style={s.modalHeader}>
               <Text style={s.modalTitle}>Detail Pesanan</Text>
               <TouchableOpacity onPress={() => setSelectedOrder(null)}>
-                <X size={20} color="#1A1A18" />
+                <X size={20} color={colors.foreground} />
               </TouchableOpacity>
             </View>
             <ScrollView style={s.modalScroll} contentContainerStyle={s.modalBody}>
@@ -842,12 +847,13 @@ export default function ProfilScreen() {
             setShowCancelConfirm(false);
             setSelectedOrder(null);
           } catch (e) {
-            Alert.alert("Error", "Gagal membatalkan pesanan");
+            setDialogContext({ title: "Error", message: "Gagal membatalkan pesanan" });
           }
         }}
         onCancel={() => setShowCancelConfirm(false)}
       />
 
+      <DialogOverlay context={dialogContext} onClose={() => setDialogContext(null)} />
     </View>
   );
 }

@@ -31,11 +31,92 @@ import { db } from "@/context/firebase-setup";
 export default function DetailMemberScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+
+  const s = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    header: {
+      backgroundColor: colors.card,
+      paddingTop: insets.top + 10,
+      paddingBottom: 14,
+      paddingHorizontal: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    backBtn: {
+      width: 36, height: 36, borderRadius: 10,
+      backgroundColor: colors.secondary,
+      alignItems: "center", justifyContent: "center",
+    },
+    headerTitle: { flex: 1, fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground },
+    editBtn: {
+      width: 36, height: 36, borderRadius: 10,
+      backgroundColor: colors.secondary,
+      alignItems: "center", justifyContent: "center",
+    },
+    scroll: { flex: 1 },
+    scrollContent: { paddingBottom: insets.bottom + 20 },
+    hero: {
+      backgroundColor: colors.card, margin: 12, borderRadius: 16,
+      borderWidth: 1, borderColor: colors.border,
+      padding: 24, alignItems: "center",
+    },
+    avatarRing: {
+      width: 76, height: 76, borderRadius: 22,
+      alignItems: "center", justifyContent: "center",
+      marginBottom: 12,
+    },
+    avatarInitials: { fontSize: 28, fontFamily: "Inter_700Bold", color: colors.primaryForeground, letterSpacing: -0.5 },
+    heroName: { fontSize: 18, fontFamily: "Inter_700Bold", color: colors.foreground, marginBottom: 8, textAlign: "center" },
+    badgesRow: { flexDirection: "row", gap: 6 },
+    badge: {
+      fontSize: 11, fontFamily: "Inter_600SemiBold",
+      paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20, overflow: "hidden",
+    },
+    cards: { paddingHorizontal: 12, gap: 10 },
+    card: {
+      backgroundColor: colors.card, borderRadius: 14,
+      borderWidth: 1, borderColor: colors.border, padding: 14, marginBottom: 10,
+    },
+    cardLabel: {
+      fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground,
+      textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10,
+    },
+    infoRow: {
+      flexDirection: "row", alignItems: "flex-start", gap: 10,
+      paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.secondary,
+    },
+    infoRowLast: { borderBottomWidth: 0, paddingBottom: 0 },
+    infoIcon: {
+      width: 34, height: 34, borderRadius: 9,
+      backgroundColor: colors.secondary,
+      alignItems: "center", justifyContent: "center",
+    },
+    infoKey: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground, marginBottom: 2 },
+    infoValue: { fontSize: 13, fontFamily: "Inter_500Medium", color: colors.foreground, lineHeight: 20 },
+    input: {
+      borderWidth: 1, borderColor: colors.border, borderRadius: 8,
+      paddingHorizontal: 12, paddingVertical: 8, fontSize: 13,
+      fontFamily: "Inter_500Medium", color: colors.foreground,
+      backgroundColor: colors.secondary, marginTop: 4, width: "100%",
+    },
+    roleChips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
+    roleChip: { 
+      paddingHorizontal: 12, paddingVertical: 6, 
+      borderRadius: 16, backgroundColor: colors.secondary, borderWidth: 1, borderColor: colors.border 
+    },
+    roleChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+    roleChipText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
+    roleChipTextActive: { color: colors.primaryForeground },
+  });
+
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { member_id } = useLocalSearchParams<{ member_id: string }>();
   const { members } = useDatabase();
 
-  const member = members.find(m => m.id === id);
+  const member = members.find(m => m.id === member_id);
 
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -83,85 +164,7 @@ export default function DetailMemberScreen() {
     }
   };
 
-  const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#F0F2EE" },
-    header: {
-      backgroundColor: "#fff",
-      paddingTop: insets.top + 10,
-      paddingBottom: 14,
-      paddingHorizontal: 16,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: "#ddd",
-    },
-    backBtn: {
-      width: 36, height: 36, borderRadius: 10,
-      backgroundColor: "#F5F5F5",
-      alignItems: "center", justifyContent: "center",
-    },
-    headerTitle: { flex: 1, fontSize: 15, fontFamily: "Inter_700Bold", color: "#1A1A1A" },
-    editBtn: {
-      width: 36, height: 36, borderRadius: 10,
-      backgroundColor: "#F5F5F5",
-      alignItems: "center", justifyContent: "center",
-    },
-    scroll: { flex: 1 },
-    scrollContent: { paddingBottom: insets.bottom + 20 },
-    hero: {
-      backgroundColor: "#fff", margin: 12, borderRadius: 16,
-      borderWidth: 1, borderColor: "#ddd",
-      padding: 24, alignItems: "center",
-    },
-    avatarRing: {
-      width: 76, height: 76, borderRadius: 22,
-      alignItems: "center", justifyContent: "center",
-      marginBottom: 12,
-    },
-    avatarInitials: { fontSize: 28, fontFamily: "Inter_700Bold", color: "#fff", letterSpacing: -0.5 },
-    heroName: { fontSize: 18, fontFamily: "Inter_700Bold", color: "#1A1A1A", marginBottom: 8, textAlign: "center" },
-    badgesRow: { flexDirection: "row", gap: 6 },
-    badge: {
-      fontSize: 11, fontFamily: "Inter_600SemiBold",
-      paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20, overflow: "hidden",
-    },
-    cards: { paddingHorizontal: 12, gap: 10 },
-    card: {
-      backgroundColor: "#fff", borderRadius: 14,
-      borderWidth: 1, borderColor: "#ddd", padding: 14, marginBottom: 10,
-    },
-    cardLabel: {
-      fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#aaa",
-      textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 10,
-    },
-    infoRow: {
-      flexDirection: "row", alignItems: "flex-start", gap: 10,
-      paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#F5F5F5",
-    },
-    infoRowLast: { borderBottomWidth: 0, paddingBottom: 0 },
-    infoIcon: {
-      width: 34, height: 34, borderRadius: 9,
-      backgroundColor: "#F5F5F5",
-      alignItems: "center", justifyContent: "center",
-    },
-    infoKey: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#aaa", marginBottom: 2 },
-    infoValue: { fontSize: 13, fontFamily: "Inter_500Medium", color: "#1A1A1A", lineHeight: 20 },
-    input: {
-      borderWidth: 1, borderColor: "#ddd", borderRadius: 8,
-      paddingHorizontal: 12, paddingVertical: 8, fontSize: 13,
-      fontFamily: "Inter_500Medium", color: "#1A1A1A",
-      backgroundColor: "#F9F9F9", marginTop: 4, width: "100%",
-    },
-    roleChips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
-    roleChip: { 
-      paddingHorizontal: 12, paddingVertical: 6, 
-      borderRadius: 16, backgroundColor: "#F5F5F5", borderWidth: 1, borderColor: "#ddd" 
-    },
-    roleChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-    roleChipText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#555" },
-    roleChipTextActive: { color: "#fff" },
-  });
+// Styles defined inside component
 
   if (!member) {
     return (

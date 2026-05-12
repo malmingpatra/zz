@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useColors } from "@/hooks/useColors";
 import { 
   ArrowLeft, 
   Printer, 
@@ -19,10 +20,73 @@ import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { useDatabase } from "@/context/DatabaseContext";
 import { auth } from "@/context/firebase-setup";
+import { useAutoCloseDialog, DialogOverlay } from "@/app/universal/components/DialogOverlay";
 
 export default function CetakLaporan() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useColors();
+  const { dialogContext, setDialogContext } = useAutoCloseDialog();
+
+  const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    header: { 
+      height: 56, 
+      flexDirection: "row", 
+      alignItems: "center", 
+      paddingHorizontal: 16, 
+      backgroundColor: colors.card,
+      borderBottomWidth: 0.5,
+      borderBottomColor: colors.border,
+    },
+    backBtn: { 
+      width: 36, 
+      height: 36, 
+      borderRadius: 10, 
+      backgroundColor: colors.secondary, 
+      alignItems: "center", 
+      justifyContent: "center", 
+      marginRight: 12 
+    },
+    headerTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground },
+    scrollContent: { padding: 16 },
+    previewLabel: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10, paddingHorizontal: 2 },
+    card: { backgroundColor: colors.card, borderRadius: 14, borderWidth: 1, borderColor: colors.border, padding: 20 },
+    reportHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20, paddingBottom: 16, borderBottomWidth: 2, borderBottomColor: colors.primary },
+    storeName: { fontSize: 16, fontFamily: "Inter_800ExtraBold", color: colors.foreground, marginBottom: 2 },
+    storeSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
+    titleBlock: { alignItems: "flex-end" },
+    reportTitle: { fontSize: 12, fontFamily: "Inter_700Bold", color: colors.primary, textTransform: "uppercase" },
+    periodLabelText: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground, marginTop: 2 },
+    sectionDivider: { borderBottomWidth: 0.5, borderBottomColor: colors.secondary, paddingBottom: 4, marginTop: 16, marginBottom: 10 },
+    sectionTitle: { fontSize: 10, fontFamily: "Inter_700Bold", color: colors.primary, textTransform: "uppercase", letterSpacing: 0.5 },
+    productRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: colors.secondary },
+    productName: { flex: 1, fontSize: 12, fontFamily: "Inter_500Medium", color: colors.foreground },
+    productQty: { width: 60, textAlign: "center", fontSize: 12, fontFamily: "Inter_400Regular", color: colors.foreground },
+    productSub: { width: 100, textAlign: "right", fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.foreground },
+    totalsContainer: { flexDirection: "row", gap: 8, marginTop: 15 },
+    totalBox: { flex: 1, padding: 10, borderRadius: 8 },
+    totalLabel: { fontSize: 9, fontFamily: "Inter_600SemiBold", textTransform: "uppercase", marginBottom: 4 },
+    totalValue: { fontSize: 13, fontFamily: "Inter_800ExtraBold" },
+    discountRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: colors.secondary },
+    discountId: { fontSize: 9, fontFamily: "monospace", color: colors.mutedForeground },
+    discountBadgeRow: { flexDirection: "row", alignItems: "center", marginTop: 2, gap: 6 },
+    badge: { backgroundColor: colors.stokWarnBg, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 20 },
+    badgeText: { fontSize: 9, fontFamily: "Inter_600SemiBold", color: colors.stokWarnText },
+    discountText: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.foreground },
+    footer: { marginTop: 30, flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
+    footerNote: { fontSize: 9, fontFamily: "Inter_400Regular", color: colors.mutedForeground, flex: 1, marginRight: 20 },
+    signature: { alignItems: "center" },
+    signatureLabel: { fontSize: 10, fontFamily: "Inter_400Regular", color: colors.mutedForeground, marginBottom: 35 },
+    signatureLine: { width: 100, height: 1, backgroundColor: colors.border },
+    signatureName: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginTop: 5 },
+    bottomActions: { padding: 12, backgroundColor: colors.background, flexDirection: "row", gap: 8, borderTopWidth: 1, borderTopColor: colors.border },
+    btnCancel: { flex: 1, height: 48, backgroundColor: colors.card, borderRadius: 12, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" },
+    btnCancelText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
+    btnPrint: { flex: 1.6, height: 48, backgroundColor: colors.primary, borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
+    btnPrintText: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primaryForeground }
+  });
+
   const { period, start, end } = useLocalSearchParams<{ period: string, start: string, end: string }>();
   
   const getDynamicPeriodLabel = (p: string) => {
@@ -255,7 +319,7 @@ export default function CetakLaporan() {
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Gagal mencetak laporan");
+      setDialogContext({ title: "Error", message: "Gagal mencetak laporan" });
     }
   };
 
@@ -349,65 +413,9 @@ export default function CetakLaporan() {
           <Text style={styles.btnPrintText}>Cetak Laporan</Text>
         </TouchableOpacity>
       </View>
+      <DialogOverlay context={dialogContext} onClose={() => setDialogContext(null)} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F0F2EE" },
-  header: { 
-    height: 56, 
-    flexDirection: "row", 
-    alignItems: "center", 
-    paddingHorizontal: 16, 
-    backgroundColor: "#fff",
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#ddd",
-  },
-  backBtn: { 
-    width: 36, 
-    height: 36, 
-    borderRadius: 10, 
-    backgroundColor: "#f5f5f5", 
-    alignItems: "center", 
-    justifyContent: "center", 
-    marginRight: 12 
-  },
-  headerTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1a1a1a" },
-  scrollContent: { padding: 16 },
-  previewLabel: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#aaa", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10, paddingHorizontal: 2 },
-  card: { backgroundColor: "#fff", borderRadius: 14, borderWeight: 0.5, borderColor: "#ddd", padding: 20 },
-  reportHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20, paddingBottom: 16, borderBottomWidth: 2, borderBottomColor: "#1a6640" },
-  storeName: { fontSize: 16, fontFamily: "Inter_800ExtraBold", color: "#1a1a1a", marginBottom: 2 },
-  storeSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#888" },
-  titleBlock: { alignItems: "flex-end" },
-  reportTitle: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#1a6640", textTransform: "uppercase" },
-  periodLabelText: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#888", marginTop: 2 },
-  sectionDivider: { borderBottomWidth: 0.5, borderBottomColor: "#E8F5EE", paddingBottom: 4, marginTop: 16, marginBottom: 10 },
-  sectionTitle: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#1a6640", textTransform: "uppercase", letterSpacing: 0.5 },
-  productRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: "#f5f5f5" },
-  productName: { flex: 1, fontSize: 12, fontFamily: "Inter_500Medium", color: "#333" },
-  productQty: { width: 60, textAlign: "center", fontSize: 12, fontFamily: "Inter_400Regular", color: "#333" },
-  productSub: { width: 100, textAlign: "right", fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#1a1a1a" },
-  totalsContainer: { flexDirection: "row", gap: 8, marginTop: 15 },
-  totalBox: { flex: 1, padding: 10, borderRadius: 8 },
-  totalLabel: { fontSize: 9, fontFamily: "Inter_600SemiBold", textTransform: "uppercase", marginBottom: 4 },
-  totalValue: { fontSize: 13, fontFamily: "Inter_800ExtraBold" },
-  discountRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, borderBottomWidth: 0.5, borderBottomColor: "#f5f5f5" },
-  discountId: { fontSize: 9, fontFamily: "monospace", color: "#888" },
-  discountBadgeRow: { flexDirection: "row", alignItems: "center", marginTop: 2, gap: 6 },
-  badge: { backgroundColor: "#FAEEDA", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 20 },
-  badgeText: { fontSize: 9, fontFamily: "Inter_600SemiBold", color: "#854F0B" },
-  discountText: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#333" },
-  footer: { marginTop: 30, flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
-  footerNote: { fontSize: 9, fontFamily: "Inter_400Regular", color: "#aaa", flex: 1, marginRight: 20 },
-  signature: { alignItems: "center" },
-  signatureLabel: { fontSize: 10, fontFamily: "Inter_400Regular", color: "#888", marginBottom: 35 },
-  signatureLine: { width: 100, height: 1, backgroundColor: "#bbb" },
-  signatureName: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#1a1a1a", marginTop: 5 },
-  bottomActions: { padding: 12, backgroundColor: "#F0F2EE", flexDirection: "row", gap: 8 },
-  btnCancel: { flex: 1, height: 48, backgroundColor: "#fff", borderRadius: 12, borderWeight: 0.5, borderColor: "#ddd", alignItems: "center", justifyCenter: "center", justifyContent: "center" },
-  btnCancelText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#888" },
-  btnPrint: { flex: 1.6, height: 48, backgroundColor: "#1a6640", borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
-  btnPrintText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" }
-});
+

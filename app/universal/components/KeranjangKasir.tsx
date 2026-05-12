@@ -39,12 +39,12 @@ function fmt(n: number) {
   return "Rp " + n.toLocaleString("id-ID");
 }
 
-interface CartModalProps {
+interface KeranjangKasirProps {
   visible: boolean;
   onClose: () => void;
 }
 
-export default function CartModal({ visible, onClose }: CartModalProps) {
+export default function KeranjangKasir({ visible, onClose }: KeranjangKasirProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -139,7 +139,7 @@ export default function CartModal({ visible, onClose }: CartModalProps) {
     if (shouldPrint) {
       onClose();
       router.push({
-        pathname: "/nota",
+        pathname: "/universal/nota",
         params: {
           orderId: orderId,
         },

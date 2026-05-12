@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -56,16 +56,17 @@ function fmt(n: number) {
   return "Rp " + n.toLocaleString("id-ID");
 }
 
-const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  menunggu:   { bg: "#FAEEDA", text: "#854F0B", label: "Menunggu" },
-  diproses:   { bg: "#E6F1FB", text: "#0C447C", label: "Diproses" },
-  dikirim:    { bg: "#E6F6FB", text: "#0C5A7C", label: "Dikirim" },
-  selesai:    { bg: "#EAF3DE", text: "#27500A", label: "Selesai" },
-  dibatalkan: { bg: "#FCEBEB", text: "#791F1F", label: "Dibatalkan" },
-};
-
 export default function KasirScreen() {
   const colors = useColors();
+
+  const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+    menunggu:   { bg: colors.stokWarnBg, text: colors.stokWarnText, label: "Menunggu" },
+    diproses:   { bg: colors.secondary, text: colors.foreground, label: "Diproses" },
+    dikirim:    { bg: colors.secondary, text: colors.foreground, label: "Dikirim" },
+    selesai:    { bg: colors.stokOkBg, text: colors.stokOkText, label: "Selesai" },
+    dibatalkan: { bg: colors.destructive + "15", text: colors.destructive, label: "Dibatalkan" },
+  };
+
   const insets = useSafeAreaInsets();
   const router = useRouter();
   
@@ -99,10 +100,10 @@ export default function KasirScreen() {
           storeAddress: alamatToko,
         });
       }
-      Alert.alert("Sukses", "Pengaturan Toko berhasil diperbarui!");
+      setDialogContext({ title: "Sukses", message: "Pengaturan Toko berhasil diperbarui!" });
     } catch (e) {
       console.error("Error updating store settings:", e);
-      Alert.alert("Error", "Gagal memperbarui pengaturan toko.");
+      setDialogContext({ title: "Error", message: "Gagal memperbarui pengaturan toko." });
     } finally {
       setTimeout(() => setSavingStore(false), 500);
     }
@@ -144,7 +145,20 @@ export default function KasirScreen() {
   const [tempBatchCategory, setTempBatchCategory] = useState("");
   const [backupLoading, setBackupLoading] = useState(false);
   const [restoreLoading, setRestoreLoading] = useState(false);
+  const [dialogContext, setDialogContext] = useState<{ title: string; message: string; isConfirm?: boolean; onConfirm?: () => void } | null>(null);
   const fileInputRef = React.useRef<any>(null);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (dialogContext && !dialogContext.isConfirm) {
+      timer = setTimeout(() => {
+        setDialogContext(null);
+      }, 20000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [dialogContext]);
   
   const filteredCategories = useMemo(() => {
     const filtered = productCategoriesRaw.filter(c => c.toLowerCase().includes(productCatSearch.toLowerCase()));
@@ -360,9 +374,52 @@ export default function KasirScreen() {
   };
 
   const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#F0F2EE" },
+    container: { flex: 1, backgroundColor: colors.background },
+    overlay: {
+      position: 'absolute',
+      top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000,
+      padding: 16,
+    },
+    dialogBox: {
+      backgroundColor: colors.card,
+      padding: 24,
+      borderRadius: 16,
+      width: '100%',
+      maxWidth: 400,
+    },
+    dialogTitle: {
+      fontSize: 18,
+      fontFamily: 'Inter_700Bold',
+      color: colors.foreground,
+      marginBottom: 12,
+    },
+    dialogMessage: {
+      fontSize: 14,
+      fontFamily: 'Inter_400Regular',
+      color: colors.mutedForeground,
+      marginBottom: 24,
+      lineHeight: 20,
+    },
+    dialogActions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+    },
+    dialogBtn: {
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 8,
+    },
+    dialogBtnText: {
+      fontSize: 14,
+      fontFamily: 'Inter_600SemiBold',
+      textAlign: 'center',
+    },
     header: {
-      backgroundColor: "#fff",
+      backgroundColor: colors.topbar,
       paddingTop: insets.top + 12,
       paddingBottom: 12,
       paddingHorizontal: 16,
@@ -370,80 +427,80 @@ export default function KasirScreen() {
       alignItems: "center",
       gap: 10,
       borderBottomWidth: 1,
-      borderBottomColor: "#ddd",
+      borderBottomColor: colors.topbarBorder,
     },
     avatar: {
       width: 38, height: 38, borderRadius: 10,
-      backgroundColor: "#E8E8E8",
-      borderWidth: 1, borderColor: "#D0D0D0",
+      backgroundColor: colors.secondary,
+      borderWidth: 1, borderColor: colors.border,
       alignItems: "center", justifyContent: "center",
     },
     headerName: { flex: 1 },
-    headerSub: { fontSize: 12, color: "#888", fontFamily: "Inter_400Regular" },
-    headerTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#1A1A1A" },
+    headerSub: { fontSize: 12, color: colors.mutedForeground, fontFamily: "Inter_400Regular" },
+    headerTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: colors.foreground },
     switchBtn: {
       flexDirection: "row", alignItems: "center", gap: 8,
-      backgroundColor: "#fff", 
+      backgroundColor: colors.card, 
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: "#ddd",
+      borderColor: colors.border,
       paddingHorizontal: 12, 
       height: 38,
     },
-    switchBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A1A" },
+    switchBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground },
     tabsRow: {
-      backgroundColor: "#fff",
+      backgroundColor: colors.card,
       flexDirection: "row",
-      borderBottomWidth: 1, borderBottomColor: "#ddd",
+      borderBottomWidth: 1, borderBottomColor: colors.border,
     },
     tabBtn: {
       flex: 1, paddingVertical: 10, alignItems: "center", gap: 3,
       borderBottomWidth: 2, borderBottomColor: "transparent",
     },
     tabBtnActive: { borderBottomColor: colors.primary },
-    tabBtnText: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#888" },
+    tabBtnText: { fontSize: 11, fontFamily: "Inter_500Medium", color: colors.mutedForeground },
     tabBtnTextActive: { color: colors.primary },
     searchBar: {
       flexDirection: "row", alignItems: "center", gap: 8,
-      backgroundColor: "#fff", borderWidth: 1, borderColor: "#ddd",
+      backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border,
       borderRadius: 8, paddingHorizontal: 12, height: 40,
     },
     searchInput: {
-      flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: "#1A1A1A",
+      flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: colors.foreground,
       padding: 0,
       ...(Platform.OS === "web" ? ({ outlineWidth: 0 } as object) : {}),
     },
     catsRow: { flexDirection: "row", gap: 7, paddingBottom: 10, paddingTop: 2 },
     catChip: {
       paddingHorizontal: 13, paddingVertical: 5,
-      borderRadius: 20, borderWidth: 1, borderColor: "#ddd",
-      backgroundColor: "#fff",
+      borderRadius: 20, borderWidth: 1, borderColor: colors.border,
+      backgroundColor: colors.card,
     },
     catChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-    catChipText: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#666" },
-    catChipTextActive: { color: "#fff" },
+    catChipText: { fontSize: 12, fontFamily: "Inter_500Medium", color: colors.mutedForeground },
+    catChipTextActive: { color: colors.primaryForeground },
     sectionPad: { padding: 12 },
     orderCard: {
-      backgroundColor: "#fff", borderRadius: 12,
-      borderWidth: 1, borderColor: "#ddd",
+      backgroundColor: colors.card, borderRadius: 12,
+      borderWidth: 1, borderColor: colors.border,
       padding: 13, marginBottom: 8,
     },
     orderTop: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },
-    orderId: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#1A1A1A" },
+    orderId: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.foreground },
     orderTotal: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.primary },
     orderBottom: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
     orderMeta: { flexDirection: "row", gap: 10 },
-    orderMetaText: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#888", flexDirection: "row", alignItems: "center" },
+    orderMetaText: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground, flexDirection: "row", alignItems: "center" },
     statusBadge: {
       fontSize: 11, fontFamily: "Inter_600SemiBold",
       paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20, overflow: "hidden",
     },
     productCard: {
-      backgroundColor: "#fff", borderRadius: 12,
-      borderWidth: 1, borderColor: "#ddd",
+      backgroundColor: colors.card, borderRadius: 12,
+      borderWidth: 1, borderColor: colors.border,
       padding: 13, marginBottom: 8,
     },
-    productName: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1A1A1A", marginBottom: 4 },
+    productName: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 4 },
     productBottom: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
     productPrice: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: colors.primary },
     stockBadge: {
@@ -452,83 +509,83 @@ export default function KasirScreen() {
     },
     actionRow: { flexDirection: "row", gap: 7, marginBottom: 12 },
     actionBtn: {
-      flex: 1, height: 36, backgroundColor: "#fff",
-      borderWidth: 1, borderColor: "#ddd", borderRadius: 8,
+      flex: 1, height: 36, backgroundColor: colors.card,
+      borderWidth: 1, borderColor: colors.border, borderRadius: 8,
       flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5,
     },
-    actionBtnText: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#555" },
+    actionBtnText: { fontSize: 12, fontFamily: "Inter_500Medium", color: colors.foreground },
     statCard: {
-      flex: 1, backgroundColor: "#fff", borderRadius: 12,
-      borderWidth: 1, borderColor: "#ddd",
+      flex: 1, backgroundColor: colors.card, borderRadius: 12,
+      borderWidth: 1, borderColor: colors.border,
       padding: 13, flexDirection: "row", alignItems: "center", gap: 10,
     },
     statIconBox: {
       width: 38, height: 38, borderRadius: 10,
       alignItems: "center", justifyContent: "center",
     },
-    statLabel: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#888" },
-    statValue: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1A1A1A" },
+    statLabel: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
+    statValue: { fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground },
     chartSection: {
-      backgroundColor: "#fff", borderRadius: 12,
-      borderWidth: 1, borderColor: "#ddd",
+      backgroundColor: colors.card, borderRadius: 12,
+      borderWidth: 1, borderColor: colors.border,
       padding: 13, marginBottom: 10,
     },
-    chartTitle: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A1A", marginBottom: 12 },
+    chartTitle: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 12 },
     chartRow: { flexDirection: "row", alignItems: "flex-end", gap: 6, height: 90 },
     chartBar: { width: "80%", borderRadius: 4, backgroundColor: colors.primary, minHeight: 4, opacity: 0.85 },
-    chartLabel: { fontSize: 9, fontFamily: "Inter_400Regular", color: "#aaa", textAlign: "center", marginTop: 4 },
+    chartLabel: { fontSize: 9, fontFamily: "Inter_400Regular", color: colors.mutedForeground, textAlign: "center", marginTop: 4 },
     topItem: {
       flexDirection: "row", alignItems: "center", gap: 8,
-      paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#F0F0F0",
+      paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.border,
     },
     topRank: { fontSize: 13, fontFamily: "Inter_700Bold", width: 20, textAlign: "center" },
-    topName: { flex: 1, fontSize: 12, fontFamily: "Inter_400Regular", color: "#1A1A1A" },
-    topBarWrap: { width: 80, height: 6, backgroundColor: "#F0F2EE", borderRadius: 3 },
+    topName: { flex: 1, fontSize: 12, fontFamily: "Inter_400Regular", color: colors.foreground },
+    topBarWrap: { width: 80, height: 6, backgroundColor: colors.background, borderRadius: 3 },
     topBar: { height: 6, borderRadius: 3, backgroundColor: colors.primary },
-    topQty: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#888", width: 40, textAlign: "right" },
+    topQty: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground, width: 40, textAlign: "right" },
     memberCard: {
       flexDirection: "row", alignItems: "center", gap: 12,
-      backgroundColor: "#fff", borderRadius: 12,
-      borderWidth: 1, borderColor: "#ddd",
+      backgroundColor: colors.card, borderRadius: 12,
+      borderWidth: 1, borderColor: colors.border,
       padding: 12, marginBottom: 8,
     },
     memberAvatar: {
       width: 38, height: 38, borderRadius: 10,
-      backgroundColor: "#E8F5EE",
+      backgroundColor: colors.secondary,
       alignItems: "center", justifyContent: "center",
     },
     memberInitials: { fontSize: 14, fontFamily: "Inter_700Bold", color: colors.primary },
-    memberName: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A1A", marginBottom: 2 },
-    memberSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#888" },
+    memberName: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 2 },
+    memberSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
     memberStatus: {
       fontSize: 11, fontFamily: "Inter_600SemiBold",
       paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20, overflow: "hidden",
     },
     bantHdr: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-    bantTitle: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A1A" },
+    bantTitle: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground },
     addBtn: {
       flexDirection: "row", alignItems: "center", gap: 5,
       backgroundColor: colors.primary, borderRadius: 8,
       paddingHorizontal: 12, paddingVertical: 7,
     },
-    addBtnText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#fff" },
+    addBtnText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.primaryForeground },
     bantCard: {
       flexDirection: "row", alignItems: "center", gap: 12,
-      backgroundColor: "#fff", borderRadius: 12,
-      borderWidth: 1, borderColor: "#ddd",
+      backgroundColor: colors.card, borderRadius: 12,
+      borderWidth: 1, borderColor: colors.border,
       padding: 12, marginBottom: 8,
     },
     bantIconBox: { width: 38, height: 38, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-    bantName: { flex: 1, fontSize: 13, fontFamily: "Inter_500Medium", color: "#1A1A1A" },
+    bantName: { flex: 1, fontSize: 13, fontFamily: "Inter_500Medium", color: colors.foreground },
     filterRow: { flexDirection: "row", gap: 7 },
     filterChip: {
       flexDirection: "row", alignItems: "center", gap: 4,
       paddingHorizontal: 12, paddingVertical: 5,
-      borderRadius: 20, borderWidth: 1, borderColor: "#ddd", backgroundColor: "#fff",
+      borderRadius: 20, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card,
     },
     filterChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-    filterChipText: { fontSize: 11, fontFamily: "Inter_500Medium", color: "#666" },
-    filterChipTextActive: { color: "#fff" },
+    filterChipText: { fontSize: 11, fontFamily: "Inter_500Medium", color: colors.mutedForeground },
+    filterChipTextActive: { color: colors.primaryForeground },
     periodBar: { 
       flexDirection: "row", 
       gap: 6, 
@@ -539,15 +596,15 @@ export default function KasirScreen() {
       height: 38,
       borderRadius: 10, 
       borderWidth: 1, 
-      borderColor: "#ddd", 
-      backgroundColor: "#fff",
+      borderColor: colors.border, 
+      backgroundColor: colors.card,
       alignItems: "center",
       justifyContent: "center",
       paddingHorizontal: 4,
     },
     periodBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-    periodBtnText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#666" },
-    periodBtnTextActive: { color: "#fff" },
+    periodBtnText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
+    periodBtnTextActive: { color: colors.primaryForeground },
     printReportBtn: {
       flexDirection: "row",
       alignItems: "center",
@@ -559,9 +616,9 @@ export default function KasirScreen() {
       marginTop: 6,
       marginBottom: 20,
     },
-    printReportBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" },
+    printReportBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primaryForeground },
     emptyBox: { alignItems: "center", padding: 40, gap: 8 },
-    emptyText: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#aaa" },
+    emptyText: { fontSize: 13, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
   });
 
   const TABS: { key: Tab; icon: keyof typeof ICON_MAP; label: string }[] = [
@@ -573,15 +630,15 @@ export default function KasirScreen() {
 
   function stockLabel(s: number) { return s === 0 ? "Habis" : `Stok ${s}`; }
   function stockStyle(s: number) {
-    if (s === 0) return { backgroundColor: "#FCEBEB", color: "#791F1F" };
-    if (s <= 8)  return { backgroundColor: "#FAEEDA", color: "#854F0B" };
-    return { backgroundColor: "#EAF3DE", color: "#27500A" };
+    if (s === 0) return { backgroundColor: colors.destructive + "15", color: colors.destructive };
+    if (s <= 8)  return { backgroundColor: colors.stokWarnBg, color: colors.stokWarnText };
+    return { backgroundColor: colors.stokOkBg, color: colors.stokOkText };
   }
 
   // ── Backup: download CSV produk ──
   async function handleBackup() {
     if (products.length === 0) {
-      Alert.alert("Backup", "Belum ada produk untuk dibackup.");
+      setDialogContext({ title: "Backup", message: "Belum ada produk untuk dibackup." });
       return;
     }
     setBackupLoading(true);
@@ -610,12 +667,12 @@ export default function KasirScreen() {
         a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
-        Alert.alert("Backup Berhasil", `${products.length} produk disimpan ke ${filename}`);
+        setDialogContext({ title: "Backup Berhasil", message: `${products.length} produk disimpan ke ${filename}` });
       } else {
-        Alert.alert("Backup", `${products.length} produk siap dibackup.\n\nFitur simpan CSV memerlukan expo-file-system pada build native.`);
+        setDialogContext({ title: "Backup", message: `${products.length} produk siap dibackup.\n\nFitur simpan CSV memerlukan expo-file-system pada build native.` });
       }
     } catch (e: any) {
-      Alert.alert("Gagal Backup", e?.message || "Terjadi kesalahan.");
+      setDialogContext({ title: "Gagal Backup", message: e?.message || "Terjadi kesalahan." });
     } finally {
       setBackupLoading(false);
     }
@@ -634,7 +691,7 @@ export default function KasirScreen() {
       const lines = cleanText.split(/\r?\n/).filter(line => line.trim() !== "");
       
       if (lines.length < 1) {
-        alert("File CSV kosong.");
+        setDialogContext({ title: "Eror", message: "File CSV kosong." });
         setRestoreLoading(false);
         return;
       }
@@ -673,53 +730,63 @@ export default function KasirScreen() {
       }
 
       if (parsedProducts.length === 0) {
-        alert("Tidak ada data produk valid ditemukan di CSV.");
+        setDialogContext({ title: "Eror", message: "Tidak ada data produk valid ditemukan di CSV." });
         setRestoreLoading(false);
         return;
       }
 
-      // Gunakan window.confirm untuk Web (AI Studio) agar pasti terlihat
-      const confirmed = window.confirm(`Ditemukan ${parsedProducts.length} produk. Lanjutkan proses restore ke database?`);
-      
-      if (confirmed) {
-        const CHUNK_SIZE = 450;
-        let processedCount = 0;
+      setDialogContext({
+        title: "Konfirmasi Restore",
+        message: `Ditemukan ${parsedProducts.length} produk. Lanjutkan proses restore ke database?`,
+        isConfirm: true,
+        onConfirm: async () => {
+          setDialogContext(null);
+          setRestoreLoading(true);
+          try {
+            const CHUNK_SIZE = 450;
+            let processedCount = 0;
 
-        for (let i = 0; i < parsedProducts.length; i += CHUNK_SIZE) {
-          const batch = writeBatch(db);
-          const chunk = parsedProducts.slice(i, i + CHUNK_SIZE);
-          
-          for (const pData of chunk) {
-            // Cari produk yang sudah ada berdasarkan nama (case-insensitive)
-            const existing = products.find(ep => ep.name && ep.name.toLowerCase() === pData.name.toLowerCase());
+            for (let i = 0; i < parsedProducts.length; i += CHUNK_SIZE) {
+              const batch = writeBatch(db);
+              const chunk = parsedProducts.slice(i, i + CHUNK_SIZE);
+              
+              for (const pData of chunk) {
+                // Cari produk yang sudah ada berdasarkan nama (case-insensitive)
+                const existing = products.find(ep => ep.name && ep.name.toLowerCase() === pData.name.toLowerCase());
+                
+                // Jika ada gunakan ID lama, jika tidak buat ID baru
+                const targetId = existing ? existing.id : "p-" + Math.random().toString(36).substring(2, 9);
+                const productRef = doc(db, "products", targetId);
+                
+                const finalProduct = {
+                  ...(existing || {}), // Pertahankan data lama jika ada
+                  ...pData,            // Timpa dengan data baru dari CSV
+                  id: targetId,
+                  stockStatus: (pData.stock ?? 0) <= 10 ? "warn" : "ok",
+                  updatedAt: serverTimestamp()
+                };
+                
+                batch.set(productRef, finalProduct, { merge: true });
+                processedCount++;
+              }
+              
+              await batch.commit();
+            }
             
-            // Jika ada gunakan ID lama, jika tidak buat ID baru
-            const targetId = existing ? existing.id : "p-" + Math.random().toString(36).substring(2, 9);
-            const productRef = doc(db, "products", targetId);
-            
-            const finalProduct = {
-              ...(existing || {}), // Pertahankan data lama jika ada
-              ...pData,            // Timpa dengan data baru dari CSV
-              id: targetId,
-              stockStatus: (pData.stock ?? 0) <= 10 ? "warn" : "ok",
-              updatedAt: serverTimestamp()
-            };
-            
-            batch.set(productRef, finalProduct, { merge: true });
-            processedCount++;
+            setDialogContext({ title: "Berhasil", message: `${processedCount} produk telah diproses.` });
+          } catch (err: any) {
+            console.error("Restore Commit Error:", err);
+            setDialogContext({ title: "Gagal Restore", message: err?.message || "Terjadi kesalahan saat menyimpan data." });
+          } finally {
+            setRestoreLoading(false);
           }
-          
-          await batch.commit();
         }
-        
-        alert(`Berhasil! ${processedCount} produk telah diproses.`);
-      }
+      });
     } catch (err: any) {
       console.error("Restore Error:", err);
-      alert(`Gagal Restore: ${err?.message || "Terjadi kesalahan saat menyimpan data."}`);
-    } finally {
+      setDialogContext({ title: "Eror", message: `Gagal membaca file: ${err?.message}` });
       setRestoreLoading(false);
-      // Reset input value so same file can be selected again
+    } finally {
       if (e.target) e.target.value = "";
     }
   }
@@ -729,7 +796,7 @@ export default function KasirScreen() {
       if (fileInputRef.current) {
         fileInputRef.current.click();
       } else {
-        alert("Sistem restore belum siap.");
+        setDialogContext({ title: "Eror", message: "Sistem restore belum siap." });
       }
     } else {
       Alert.alert("Restore", "Fitur restore CSV memerlukan build khusus pada perangkat mobile.");
@@ -771,7 +838,7 @@ export default function KasirScreen() {
           <Text style={s.headerTitle}>{userProfile?.displayName || auth.currentUser?.displayName || "Admin User"}</Text>
         </View>
         <TouchableOpacity style={s.switchBtn} onPress={() => router.back()} activeOpacity={0.8}>
-          <ArrowRightLeft size={16} color="#1A1A1A" />
+          <ArrowRightLeft size={16} color={colors.foreground} />
           <Text style={s.switchBtnText}>Switch</Text>
         </TouchableOpacity>
       </View>
@@ -815,16 +882,16 @@ export default function KasirScreen() {
                 activeOpacity={0.7}
                 onPress={() => setShowOrderAdvancedFilter(!showOrderAdvancedFilter)}
               >
-                <SlidersHorizontal size={18} color={showOrderAdvancedFilter ? "#fff" : "#555"} />
+                <SlidersHorizontal size={18} color={showOrderAdvancedFilter ? colors.primaryForeground : colors.mutedForeground} />
               </TouchableOpacity>
             </View>
 
             {showOrderAdvancedFilter && (
-              <View style={{ backgroundColor: "#fff", borderRadius: 12, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: "#DDDAD2" }}>
-                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A18", marginBottom: 8 }}>Tanggal Transaksi</Text>
+              <View style={{ backgroundColor: colors.card, borderRadius: 12, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: colors.border }}>
+                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 8 }}>Tanggal Transaksi</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
                   <TouchableOpacity 
-                    style={{ flex: 1, height: 48, backgroundColor: "#F0F2EE", borderRadius: 8, justifyContent: "center", paddingHorizontal: 12 }}
+                    style={{ flex: 1, height: 48, backgroundColor: colors.secondary, borderRadius: 8, justifyContent: "center", paddingHorizontal: 12, borderWidth: 1, borderColor: colors.border }}
                     onPress={() => {
                       if (Platform.OS !== 'web') {
                         setShowOrderDatePicker(true);
@@ -840,46 +907,47 @@ export default function KasirScreen() {
                          style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', top: 0, left: 0 }}
                        />
                     ) : null}
-                    <Text style={{ fontSize: 13, fontFamily: "Inter_400Regular", color: orderDate ? "#1A1A18" : "#9A9890" }}>
+                    <Text style={{ fontSize: 13, fontFamily: "Inter_400Regular", color: orderDate ? colors.foreground : colors.mutedForeground }}>
                       {orderDate || "Pilih Tanggal"}
                     </Text>
                   </TouchableOpacity>
                   {orderDate !== "" && (
                     <TouchableOpacity 
-                      style={{ width: 48, height: 48, backgroundColor: '#FCEBEB', borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}
+                      style={{ width: 48, height: 48, backgroundColor: 'rgba(252, 235, 235, 0.2)', borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FCEBEB' }}
                       onPress={() => setOrderDate("")}
                       activeOpacity={0.7}
                     >
-                      <X size={18} color="#791F1F" />
+                      <X size={18} color="#FF6B6B" />
                     </TouchableOpacity>
                   )}
                 </View>
 
-                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A18", marginBottom: 8 }}>Status Pesanan</Text>
+                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 8 }}>Status Pesanan</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
                   {["menunggu", "dikirim", "selesai", "dibatalkan"].map((st) => (
                     <TouchableOpacity
                       key={st}
                       style={{
                         paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16,
-                        backgroundColor: orderStatus === st ? colors.primary : "#F0F2EE",
+                        backgroundColor: orderStatus === st ? colors.primary : colors.secondary,
                         marginRight: 8
                       }}
                       onPress={() => { setOrderStatus(orderStatus === st ? "" : st); setOrderPage(1); }}
                     >
-                      <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: orderStatus === st ? "#fff" : "#4A4840", textTransform: 'capitalize' }}>
+                      <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: orderStatus === st ? colors.primaryForeground : colors.mutedForeground, textTransform: 'capitalize' }}>
                         {st}
                       </Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
 
-                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A18", marginBottom: 8 }}>Area Customer</Text>
-                <View style={[s.searchBar, { height: 36, marginBottom: 10, backgroundColor: "#F0F2EE", borderColor: "transparent" }]}>
-                  <Search size={14} color="#aaa" />
+                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 8 }}>Area Customer</Text>
+                <View style={[s.searchBar, { height: 36, marginBottom: 10, backgroundColor: colors.secondary, borderColor: "transparent" }]}>
+                  <Search size={14} color={colors.mutedForeground} />
                   <TextInput 
                     style={[s.searchInput, { fontSize: 12 }]} 
                     placeholder="Cari area..." 
+                    placeholderTextColor={colors.mutedForeground}
                     value={orderAreaSearch} 
                     onChangeText={(t) => { setOrderAreaSearch(t); setOrderAreaPage(1); }} 
                   />
@@ -928,6 +996,7 @@ export default function KasirScreen() {
                 value={orderDate ? new Date(orderDate) : new Date()}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                themeVariant={colors.isDark ? 'dark' : 'light'}
                 onChange={(event: DateTimePickerEvent, date?: Date) => {
                   if (Platform.OS !== 'ios') setShowOrderDatePicker(false);
                   if (date) {
@@ -953,7 +1022,7 @@ export default function KasirScreen() {
                   <TouchableOpacity
                     key={o.id}
                     style={s.orderCard}
-                    onPress={() => router.push({ pathname: "/pesanan/[id]", params: { id: o.id } })}
+                    onPress={() => router.push({ pathname: "/universal/pesanan/[pesanan_id]", params: { pesanan_id: o.id } })}
                     activeOpacity={0.75}
                   >
                     <View style={s.orderTop}>
@@ -984,7 +1053,7 @@ export default function KasirScreen() {
                 >
                   <ChevronLeft size={24} color={colors.primary} />
                 </TouchableOpacity>
-                <Text style={{ fontSize: 13, fontFamily: 'Inter_600SemiBold', color: '#1A1A1A' }}>
+                <Text style={{ fontSize: 13, fontFamily: 'Inter_600SemiBold', color: colors.foreground }}>
                   Halaman {orderPage} dari {totalOrderPages}
                 </Text>
                 <TouchableOpacity 
@@ -1059,25 +1128,21 @@ export default function KasirScreen() {
                   disabled={selectedProductIds.length === 0}
                   onPress={() => {
                     if (selectedProductIds.length === 0) return;
-                    Alert.alert(
-                      "Hapus Produk",
-                      `Hapus ${selectedProductIds.length} produk terpilih? Tindakan ini tidak dapat dibatalkan.`,
-                      [
-                        { text: "Batal", style: "cancel" },
-                        {
-                          text: "Hapus",
-                          style: "destructive",
-                          onPress: async () => {
-                            const ids = [...selectedProductIds];
-                            setProductSelectionMode(false);
-                            setSelectedProductIds([]);
-                            for (const id of ids) {
-                              if (deleteProduct) await deleteProduct(id);
-                            }
-                          },
-                        },
-                      ]
-                    );
+                    setDialogContext({
+                      title: "Hapus Produk",
+                      message: `Hapus ${selectedProductIds.length} produk terpilih? Tindakan ini tidak dapat dibatalkan.`,
+                      isConfirm: true,
+                      onConfirm: async () => {
+                        setDialogContext(null);
+                        const ids = [...selectedProductIds];
+                        setProductSelectionMode(false);
+                        setSelectedProductIds([]);
+                        for (const id of ids) {
+                          if (deleteProduct) await deleteProduct(id);
+                        }
+                        setDialogContext({ title: "Berhasil", message: `${ids.length} produk telah dihapus.` });
+                      }
+                    });
                   }}
                 >
                   <Trash2 size={14} color="#fff" />
@@ -1106,33 +1171,34 @@ export default function KasirScreen() {
                   activeOpacity={0.7}
                   onPress={() => setShowProductAdvancedFilter(!showProductAdvancedFilter)}
                 >
-                  <SlidersHorizontal size={18} color={showProductAdvancedFilter ? "#fff" : "#555"} />
+                  <SlidersHorizontal size={18} color={showProductAdvancedFilter ? colors.primaryForeground : colors.mutedForeground} />
                 </TouchableOpacity>
               </View>
 
               {showProductAdvancedFilter && (
-                <View style={{ backgroundColor: "#fff", borderRadius: 12, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: "#DDDAD2" }}>
-                  <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A18", marginBottom: 8 }}>Stok</Text>
+                <View style={{ backgroundColor: colors.card, borderRadius: 12, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: colors.border }}>
+                  <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 8 }}>Stok</Text>
                   <View style={{ flexDirection: 'row', marginBottom: 16 }}>
                     <TouchableOpacity
                       style={{
                         paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16,
-                        backgroundColor: productStockLow ? colors.primary : "#F0F2EE",
+                        backgroundColor: productStockLow ? colors.primary : colors.secondary,
                       }}
                       onPress={() => { setProductStockLow(!productStockLow); setProductPage(1); }}
                     >
-                      <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: productStockLow ? "#fff" : "#4A4840" }}>
+                      <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: productStockLow ? colors.primaryForeground : colors.foreground }}>
                         Stok 0-10
                       </Text>
                     </TouchableOpacity>
                   </View>
 
-                  <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A18", marginBottom: 8 }}>Kategori Produk</Text>
-                  <View style={[s.searchBar, { height: 36, marginBottom: 10, backgroundColor: "#F0F2EE", borderColor: "transparent" }]}>
-                    <Search size={14} color="#aaa" />
+                  <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 8 }}>Kategori Produk</Text>
+                  <View style={[s.searchBar, { height: 36, marginBottom: 10, backgroundColor: colors.secondary, borderColor: "transparent" }]}>
+                    <Search size={14} color={colors.mutedForeground} />
                     <TextInput 
                       style={[s.searchInput, { fontSize: 12 }]} 
                       placeholder="Cari kategori..." 
+                      placeholderTextColor={colors.mutedForeground}
                       value={productCatSearch} 
                       onChangeText={(t) => { setProductCatSearch(t); setProductCatFilterPage(1); }} 
                     />
@@ -1147,28 +1213,28 @@ export default function KasirScreen() {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           borderBottomWidth: 1,
-                          borderBottomColor: '#F0F2EE'
+                          borderBottomColor: colors.secondary
                         }}
                         onPress={() => { setProductCat(productCat === c ? "Semua" : c); setProductPage(1); }}
                       >
-                        <Text style={{ fontSize: 13, fontFamily: "Inter_500Medium", color: productCat === c ? colors.primary : "#4A4840" }}>
+                        <Text style={{ fontSize: 13, fontFamily: "Inter_500Medium", color: productCat === c ? colors.primary : colors.foreground }}>
                           {c}
                         </Text>
                         {productCat === c && <LucideIcons.Check size={16} color={colors.primary} />}
                       </TouchableOpacity>
                     ))}
                     {filteredCategories.length === 0 && (
-                      <Text style={{ fontSize: 12, color: '#aaa', fontStyle: 'italic' }}>Tidak ada kategori ditemukan</Text>
+                      <Text style={{ fontSize: 12, color: colors.mutedForeground, fontStyle: 'italic' }}>Tidak ada kategori ditemukan</Text>
                     )}
 
                     {totalCatFilterPages > 1 && (
                       <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, marginTop: 8 }}>
                         <TouchableOpacity onPress={() => setProductCatFilterPage(p => Math.max(1, p - 1))} disabled={productCatFilterPage === 1}>
-                          <ChevronLeft size={18} color={productCatFilterPage === 1 ? "#ccc" : colors.primary} />
+                          <ChevronLeft size={18} color={productCatFilterPage === 1 ? colors.border : colors.primary} />
                         </TouchableOpacity>
-                        <Text style={{ fontSize: 11, color: "#666" }}>{productCatFilterPage}/{totalCatFilterPages}</Text>
+                        <Text style={{ fontSize: 11, color: colors.mutedForeground }}>{productCatFilterPage}/{totalCatFilterPages}</Text>
                         <TouchableOpacity onPress={() => setProductCatFilterPage(p => Math.min(totalCatFilterPages, p + 1))} disabled={productCatFilterPage === totalCatFilterPages}>
-                          <ChevronRight size={18} color={productCatFilterPage === totalCatFilterPages ? "#ccc" : colors.primary} />
+                          <ChevronRight size={18} color={productCatFilterPage === totalCatFilterPages ? colors.border : colors.primary} />
                         </TouchableOpacity>
                       </View>
                     )}
@@ -1198,7 +1264,7 @@ export default function KasirScreen() {
                 <TouchableOpacity
                   style={s.actionBtn}
                   activeOpacity={0.7}
-                  onPress={() => router.push("/(admin)/edit-massal")}
+                  onPress={() => router.push("/lanjutan/edit-massal")}
                 >
                   <SquarePen size={14} color="#555" />
                   <Text style={s.actionBtnText}>Edit Massal</Text>
@@ -1206,7 +1272,7 @@ export default function KasirScreen() {
                 <TouchableOpacity
                   style={[s.actionBtn, { backgroundColor: colors.primary, borderColor: colors.primary }]}
                   activeOpacity={0.8}
-                  onPress={() => router.push("/tambah-produk")}
+                  onPress={() => router.push("/lanjutan/tambah-produk")}
                 >
                   <Plus size={14} color="#fff" />
                   <Text style={[s.actionBtnText, { color: "#fff" }]}>Tambah</Text>
@@ -1240,7 +1306,7 @@ export default function KasirScreen() {
                             setSelectedProductIds([...selectedProductIds, p.id]);
                           }
                         } else {
-                          router.push({ pathname: "/tambah-produk", params: { id: p.id } });
+                          router.push({ pathname: "/lanjutan/tambah-produk", params: { id: p.id } });
                         }
                       }}
                     >
@@ -1279,7 +1345,7 @@ export default function KasirScreen() {
                   >
                     <ChevronLeft size={24} color={colors.primary} />
                   </TouchableOpacity>
-                  <Text style={{ fontSize: 13, fontFamily: 'Inter_600SemiBold', color: '#1A1A1A' }}>
+                  <Text style={{ fontSize: 13, fontFamily: 'Inter_600SemiBold', color: colors.foreground }}>
                     Halaman {productPage} dari {totalPages}
                   </Text>
                   <TouchableOpacity 
@@ -1329,16 +1395,19 @@ export default function KasirScreen() {
                     style={{ flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 8, backgroundColor: colors.primary }}
                     onPress={async () => {
                       if (!tempBatchCategory.trim()) return;
+                      let count = 0;
                       for (const id of selectedProductIds) {
                         const p = products.find(x => x.id === id);
                         if (p && updateProduct) {
                           await updateProduct({ ...p, category: tempBatchCategory.trim() });
+                          count++;
                         }
                       }
                       setBatchCategoryModal(false);
                       setProductSelectionMode(false);
                       setSelectedProductIds([]);
                       setTempBatchCategory("");
+                      setDialogContext({ title: "Sukses", message: `${count} produk berhasil diperbarui kategorinya!` });
                     }}
                   >
                     <Text style={{ color: colors.primaryForeground, fontFamily: 'Inter_600SemiBold' }}>Simpan</Text>
@@ -1386,15 +1455,15 @@ export default function KasirScreen() {
             {/* Inline Custom Date Selector (Dropdown) */}
             {statPeriod === "custom" && (
               <View style={{ 
-                backgroundColor: "#fff", borderRadius: 12, borderWidth: 1, borderColor: "#ddd",
+                backgroundColor: colors.card, borderRadius: 12, borderWidth: 1, borderColor: colors.border,
                 padding: 16, marginBottom: 15
               }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 12, color: "#666", marginBottom: 6, fontFamily: "Inter_600SemiBold" }}>Dari</Text>
+                    <Text style={{ fontSize: 12, color: colors.mutedForeground, marginBottom: 6, fontFamily: "Inter_600SemiBold" }}>Dari</Text>
                     <TouchableOpacity 
                       style={{ 
-                        height: 44, backgroundColor: "#F5F5F5", borderRadius: 10, borderWidth: 1, borderColor: "#E5E5E5",
+                        height: 44, backgroundColor: colors.secondary, borderRadius: 10, borderWidth: 1, borderColor: colors.border,
                         flexDirection: "row", alignItems: "center", paddingHorizontal: 12, justifyContent: "space-between"
                       }}
                       onPress={() => {
@@ -1419,13 +1488,13 @@ export default function KasirScreen() {
                             fontSize: '13px',
                             fontFamily: 'Inter_500Medium',
                             width: '100%',
-                            color: '#000'
+                            color: colors.foreground
                           }}
                         />
                       ) : (
                         <>
-                          <Text style={{ fontSize: 13, fontFamily: "Inter_500Medium" }}>{tempStart}</Text>
-                          <ChevronDown size={16} color="#999" />
+                          <Text style={{ fontSize: 13, fontFamily: "Inter_500Medium", color: colors.foreground }}>{tempStart}</Text>
+                          <ChevronDown size={16} color={colors.mutedForeground} />
                         </>
                       )}
                     </TouchableOpacity>
@@ -1434,6 +1503,7 @@ export default function KasirScreen() {
                         value={new Date(tempStart)}
                         mode="date"
                         display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        themeVariant={colors.isDark ? 'dark' : 'light'}
                         onChange={(event: DateTimePickerEvent, date?: Date) => {
                           if (Platform.OS !== 'ios') setShowStartPicker(false);
                           if (date) {
@@ -1453,10 +1523,10 @@ export default function KasirScreen() {
                   <ArrowRight size={18} color="#CCC" style={{ marginTop: 22 }} />
 
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 12, color: "#666", marginBottom: 6, fontFamily: "Inter_600SemiBold" }}>Sampai</Text>
+                    <Text style={{ fontSize: 12, color: colors.mutedForeground, marginBottom: 6, fontFamily: "Inter_600SemiBold" }}>Sampai</Text>
                     <TouchableOpacity 
                       style={{ 
-                        height: 44, backgroundColor: "#F5F5F5", borderRadius: 10, borderWidth: 1, borderColor: "#E5E5E5",
+                        height: 44, backgroundColor: colors.secondary, borderRadius: 10, borderWidth: 1, borderColor: colors.border,
                         flexDirection: "row", alignItems: "center", paddingHorizontal: 12, justifyContent: "space-between"
                       }}
                       onPress={() => {
@@ -1481,13 +1551,13 @@ export default function KasirScreen() {
                             fontSize: '13px',
                             fontFamily: 'Inter_500Medium',
                             width: '100%',
-                            color: '#000'
+                            color: colors.foreground
                           }}
                         />
                       ) : (
                         <>
-                          <Text style={{ fontSize: 13, fontFamily: "Inter_500Medium" }}>{tempEnd}</Text>
-                          <ChevronDown size={16} color="#999" />
+                          <Text style={{ fontSize: 13, fontFamily: "Inter_500Medium", color: colors.foreground }}>{tempEnd}</Text>
+                          <ChevronDown size={16} color={colors.mutedForeground} />
                         </>
                       )}
                     </TouchableOpacity>
@@ -1496,6 +1566,7 @@ export default function KasirScreen() {
                         value={new Date(tempEnd)}
                         mode="date"
                         display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        themeVariant={colors.isDark ? 'dark' : 'light'}
                         onChange={(event: DateTimePickerEvent, date?: Date) => {
                           if (Platform.OS !== 'ios') setShowEndPicker(false);
                           if (date) {
@@ -1520,7 +1591,7 @@ export default function KasirScreen() {
               activeOpacity={0.8}
               onPress={() => {
                 router.push({
-                  pathname: "/cetak-laporan",
+                  pathname: "/lanjutan/cetak-laporan",
                   params: { 
                     period: statPeriod,
                     ...(statPeriod === "custom" ? { start: customDates.start, end: customDates.end } : {})
@@ -1534,18 +1605,18 @@ export default function KasirScreen() {
 
             <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
               <View style={[s.statCard, { flex: 1.6 }]}>
-                <View style={[s.statIconBox, { backgroundColor: "#EAF3DE" }]}>
-                  <DollarSign size={18} color="#1A6640" />
-                </View>
-                <View>
-                  <Text style={s.statLabel}>Omset</Text>
-                  <Text style={s.statValue}>{fmt(statTotal)}</Text>
-                </View>
-              </View>
-              <View style={[s.statCard, { flex: 1 }]}>
-                <View style={[s.statIconBox, { backgroundColor: "#E6F1FB" }]}>
-                  <FileText size={18} color="#0C447C" />
-                </View>
+                    <View style={[s.statIconBox, { backgroundColor: colors.stokOkBg }]}>
+                      <DollarSign size={18} color={colors.stokOkText} />
+                    </View>
+                    <View>
+                      <Text style={s.statLabel}>Omset</Text>
+                      <Text style={s.statValue}>{fmt(statTotal)}</Text>
+                    </View>
+                  </View>
+                  <View style={[s.statCard, { flex: 1 }]}>
+                    <View style={[s.statIconBox, { backgroundColor: colors.accent }]}>
+                      <FileText size={18} color={colors.primary} />
+                    </View>
                 <View>
                   <Text style={s.statLabel}>Transaksi</Text>
                   <Text style={s.statValue}>{orders.length}</Text>
@@ -1621,26 +1692,26 @@ export default function KasirScreen() {
             <View style={[s.bantHdr, { marginBottom: 12 }]}>
               <Text style={s.bantTitle}>Informasi Toko</Text>
             </View>
-            <View style={{ backgroundColor: "#fff", padding: 16, borderRadius: 12, borderWidth: 1, borderColor: "#ddd", marginBottom: 24 }}>
+            <View style={{ backgroundColor: colors.card, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: colors.border, marginBottom: 24 }}>
               <View style={{ marginBottom: 12 }}>
-                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A1A", marginBottom: 6 }}>Nama Toko</Text>
+                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 6 }}>Nama Toko</Text>
                 <TextInput
-                  style={{ backgroundColor: "#F0F2EE", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 8, fontSize: 14, fontFamily: "Inter_400Regular", color: "#1A1A1A" }}
+                  style={{ backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 8, fontSize: 14, fontFamily: "Inter_400Regular", color: colors.foreground }}
                   value={namaToko}
                   onChangeText={setNamaToko}
                   placeholder="Ketik nama toko Anda"
-                  placeholderTextColor="#bbb"
+                  placeholderTextColor={colors.mutedForeground}
                   underlineColorAndroid="transparent"
                 />
               </View>
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A1A", marginBottom: 6 }}>Alamat Toko</Text>
+                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 6 }}>Alamat Toko</Text>
                 <TextInput
-                  style={{ backgroundColor: "#F0F2EE", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 8, fontSize: 14, fontFamily: "Inter_400Regular", color: "#1A1A1A" }}
+                  style={{ backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 8, fontSize: 14, fontFamily: "Inter_400Regular", color: colors.foreground }}
                   value={alamatToko}
                   onChangeText={setAlamatToko}
                   placeholder="Ketik alamat toko Anda"
-                  placeholderTextColor="#bbb"
+                  placeholderTextColor={colors.mutedForeground}
                   underlineColorAndroid="transparent"
                 />
               </View>
@@ -1650,7 +1721,7 @@ export default function KasirScreen() {
                 onPress={handleSaveStore}
                 disabled={savingStore}
               >
-                <Text style={{ fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#fff" }}>
+                <Text style={{ fontSize: 14, fontFamily: "Inter_600SemiBold", color: colors.primaryForeground }}>
                   {savingStore ? "Menyimpan..." : "Simpan Pengaturan"}
                 </Text>
               </TouchableOpacity>
@@ -1690,7 +1761,7 @@ export default function KasirScreen() {
                   <TouchableOpacity
                     key={m.id || m.name}
                     style={s.memberCard}
-                    onPress={() => router.push({ pathname: "/member/[id]", params: { id: m.id } })}
+                    onPress={() => router.push({ pathname: "/universal/member/[member_id]", params: { member_id: m.id } })}
                     activeOpacity={0.75}
                   >
                     <View style={s.memberAvatar}>
@@ -1703,8 +1774,8 @@ export default function KasirScreen() {
                     <Text style={[
                       s.memberStatus,
                       m.status === "aktif"
-                        ? { backgroundColor: "#EAF3DE", color: "#27500A" }
-                        : { backgroundColor: "#F5F5F5", color: "#888" },
+                        ? { backgroundColor: colors.stokOkBg, color: colors.stokOkText }
+                        : { backgroundColor: colors.secondary, color: colors.mutedForeground },
                     ]}>
                       {m.status === "aktif" ? "Aktif" : "Non-aktif"}
                     </Text>
@@ -1721,9 +1792,9 @@ export default function KasirScreen() {
                     >
                       <ChevronLeft size={24} color={colors.primary} />
                     </TouchableOpacity>
-                    <Text style={{ fontSize: 13, fontFamily: 'Inter_600SemiBold', color: '#1A1A1A' }}>
-                      Halaman {memberPage} dari {totalMemberPages}
-                    </Text>
+                <Text style={{ fontSize: 13, fontFamily: 'Inter_600SemiBold', color: colors.foreground }}>
+                  Halaman {memberPage} dari {totalMemberPages}
+                </Text>
                     <TouchableOpacity 
                       onPress={() => setMemberPage(v => Math.min(totalMemberPages, v + 1))}
                       disabled={memberPage === totalMemberPages}
@@ -1742,7 +1813,7 @@ export default function KasirScreen() {
               <TouchableOpacity 
                 style={s.addBtn} 
                 activeOpacity={0.8}
-                onPress={() => router.push("/tambah-bantuan")}
+                onPress={() => router.push("/lanjutan/tambah-bantuan")}
               >
                 <Plus size={13} color="#fff" />
                 <Text style={s.addBtnText}>Tambah</Text>
@@ -1764,6 +1835,34 @@ export default function KasirScreen() {
             ))}
           </View>
         </ScrollView>
+      )}
+
+      {/* Global Dialog Overlay */}
+      {dialogContext && (
+        <View style={s.overlay}>
+          <View style={s.dialogBox}>
+            <Text style={s.dialogTitle}>{dialogContext.title}</Text>
+            <Text style={s.dialogMessage}>{dialogContext.message}</Text>
+            <View style={s.dialogActions}>
+              <TouchableOpacity
+                style={[s.dialogBtn, { backgroundColor: colors.secondary }]}
+                onPress={() => setDialogContext(null)}
+              >
+                <Text style={[s.dialogBtnText, { color: colors.foreground }]}>
+                  {dialogContext.isConfirm ? "Batal" : "Ok"}
+                </Text>
+              </TouchableOpacity>
+              {dialogContext.isConfirm && (
+                <TouchableOpacity
+                  style={[s.dialogBtn, { backgroundColor: colors.destructive, marginLeft: 12 }]}
+                  onPress={dialogContext.onConfirm}
+                >
+                  <Text style={[s.dialogBtnText, { color: colors.destructiveForeground }]}>Lanjutkan</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </View>
       )}
     </View>
   );

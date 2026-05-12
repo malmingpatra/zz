@@ -19,7 +19,6 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useCart } from "@/context/CartContext";
-import { useDatabase } from "@/context/DatabaseContext";
 
 function fmt(n: number) {
   return "Rp " + n.toLocaleString("id-ID");
@@ -42,19 +41,18 @@ export default function ProductDetailScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { addToCart } = useCart();
-  const { products } = useDatabase();
+  const { produk_id } = useLocalSearchParams<{ produk_id: string }>();
+  const { products, addToCart } = useCart();
 
-  const product = products.find((p) => p.id === id);
+  const product = products.find((p) => p.id === produk_id);
   const [qty, setQty] = useState(1);
   const [qtyText, setQtyText] = useState("1");
 
   if (!product) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#F0F2EE" }}>
-        <AlertCircle size={36} color="#ccc" />
-        <Text style={{ marginTop: 10, fontSize: 14, color: "#aaa", fontFamily: "Inter_400Regular" }}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background }}>
+        <AlertCircle size={36} color={colors.mutedForeground} />
+        <Text style={{ marginTop: 10, fontSize: 14, color: colors.mutedForeground, fontFamily: "Inter_400Regular" }}>
           Produk tidak ditemukan
         </Text>
       </View>
@@ -98,9 +96,9 @@ export default function ProductDetailScreen() {
   }
 
   const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#F0F2EE" },
+    container: { flex: 1, backgroundColor: colors.background },
     header: {
-      backgroundColor: "#fff",
+      backgroundColor: colors.card,
       paddingTop: insets.top + 10,
       paddingBottom: 14,
       paddingHorizontal: 16,
@@ -108,67 +106,67 @@ export default function ProductDetailScreen() {
       alignItems: "center",
       gap: 12,
       borderBottomWidth: 1,
-      borderBottomColor: "#ddd",
+      borderBottomColor: colors.border,
     },
     backBtn: {
       width: 36, height: 36, borderRadius: 10,
-      backgroundColor: "#F5F5F5",
+      backgroundColor: colors.secondary,
       alignItems: "center", justifyContent: "center",
     },
-    headerTitle: { flex: 1, fontSize: 15, fontFamily: "Inter_700Bold", color: "#1A1A1A" },
+    headerTitle: { flex: 1, fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground },
     scroll: { flex: 1 },
     scrollContent: { paddingBottom: insets.bottom + 80 },
     hero: {
-      backgroundColor: "#fff",
+      backgroundColor: colors.card,
       margin: 12, borderRadius: 16,
-      borderWidth: 1, borderColor: "#ddd",
+      borderWidth: 1, borderColor: colors.border,
     },
     heroInfo: { padding: 16 },
-    heroName: { fontSize: 18, fontFamily: "Inter_700Bold", color: "#1A1A1A", marginBottom: 8 },
+    heroName: { fontSize: 18, fontFamily: "Inter_700Bold", color: colors.foreground, marginBottom: 8 },
     catBadge: {
       alignSelf: "flex-start",
-      backgroundColor: "#F5F5F5",
+      backgroundColor: colors.secondary,
       paddingHorizontal: 10, paddingVertical: 3,
       borderRadius: 20,
     },
-    catBadgeText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#666" },
+    catBadgeText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
     section: {
       marginHorizontal: 12, marginBottom: 10,
-      backgroundColor: "#fff", borderRadius: 14,
-      borderWidth: 1, borderColor: "#ddd",
+      backgroundColor: colors.card, borderRadius: 14,
+      borderWidth: 1, borderColor: colors.border,
       padding: 14,
     },
     secLabel: {
-      fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#aaa",
+      fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground,
       textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 12,
     },
     statRow: { flexDirection: "row", gap: 10 },
     statBox: {
-      flex: 1, backgroundColor: "#F9F9F9", borderRadius: 10, padding: 12,
+      flex: 1, backgroundColor: colors.secondary, borderRadius: 10, padding: 12,
       alignItems: "center",
     },
     statBoxLabel: {
       flexDirection: "row", alignItems: "center", gap: 4,
       marginBottom: 6,
     },
-    statBoxLabelText: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#aaa" },
-    statBoxValue: { fontSize: 18, fontFamily: "Inter_700Bold", color: "#1A1A1A" },
-    descText: { fontSize: 13, fontFamily: "Inter_400Regular", color: "#555", lineHeight: 22 },
+    statBoxLabelText: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
+    statBoxValue: { fontSize: 18, fontFamily: "Inter_700Bold", color: colors.foreground },
+    descText: { fontSize: 13, fontFamily: "Inter_400Regular", color: colors.foreground, lineHeight: 22 },
     qtySection: {
       marginHorizontal: 12, marginBottom: 10,
-      backgroundColor: "#fff", borderRadius: 14,
-      borderWidth: 1, borderColor: "#ddd",
+      backgroundColor: colors.card, borderRadius: 14,
+      borderWidth: 1, borderColor: colors.border,
       padding: 14, flexDirection: "row", alignItems: "center",
     },
-    qtyLabel: { flex: 1, fontSize: 13, fontFamily: "Inter_500Medium", color: "#555" },
+    qtyLabel: { flex: 1, fontSize: 13, fontFamily: "Inter_500Medium", color: colors.mutedForeground },
     qtyCtrl: { flexDirection: "row", alignItems: "center", gap: 10 },
     qtyBtn: {
       width: 34, height: 34, borderRadius: 9,
-      borderWidth: 1, borderColor: "#ddd",
-      backgroundColor: "#F5F5F5",
+      borderWidth: 1, borderColor: colors.border,
+      backgroundColor: colors.secondary,
       alignItems: "center", justifyContent: "center",
     },
-    qtyBtnText: { fontSize: 20, fontFamily: "Inter_600SemiBold", color: "#555", lineHeight: 24 },
+    qtyBtnText: { fontSize: 20, fontFamily: "Inter_600SemiBold", color: colors.foreground, lineHeight: 24 },
     qtyInput: {
       width: 52, height: 36,
       borderWidth: 1.5, borderColor: colors.primary,
@@ -181,28 +179,30 @@ export default function ProductDetailScreen() {
       position: "absolute", bottom: 0, left: 0, right: 0,
       flexDirection: "row", gap: 8,
       padding: 12, paddingBottom: insets.bottom + 12,
-      backgroundColor: "#F0F2EE",
+      backgroundColor: colors.card,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
     },
     cancelBtn: {
-      flex: 1, height: 46, backgroundColor: "#fff",
-      borderWidth: 1, borderColor: "#ddd", borderRadius: 12,
+      flex: 1, height: 46, backgroundColor: colors.card,
+      borderWidth: 1, borderColor: colors.border, borderRadius: 12,
       alignItems: "center", justifyContent: "center",
     },
-    cancelBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#888" },
+    cancelBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
     addBtn: {
       flex: 1.6, height: 46,
-      backgroundColor: isOut ? "#ccc" : colors.primary,
+      backgroundColor: isOut ? colors.border : colors.primary,
       borderRadius: 12,
       flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
     },
-    addBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" },
+    addBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primaryForeground },
   });
 
   return (
     <View style={s.container}>
       <View style={s.header}>
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
-          <ArrowLeft size={18} color="#444" />
+          <ArrowLeft size={18} color={colors.foreground} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>Detail Produk</Text>
       </View>
@@ -224,14 +224,14 @@ export default function ProductDetailScreen() {
           <View style={s.statRow}>
             <View style={s.statBox}>
               <View style={s.statBoxLabel}>
-                <Layers size={12} color="#aaa" />
+                <Layers size={12} color={colors.mutedForeground} />
                 <Text style={s.statBoxLabelText}>Stok</Text>
               </View>
               <Text style={s.statBoxValue}>{product.stock}</Text>
             </View>
             <View style={s.statBox}>
               <View style={s.statBoxLabel}>
-                <Tag size={12} color="#aaa" />
+                <Tag size={12} color={colors.mutedForeground} />
                 <Text style={s.statBoxLabelText}>Harga Satuan</Text>
               </View>
               <Text style={[s.statBoxValue, { color: colors.primary, fontSize: 15 }]}>{fmt(product.price)}</Text>
@@ -274,7 +274,7 @@ export default function ProductDetailScreen() {
           <Text style={s.cancelBtnText}>Tutup</Text>
         </TouchableOpacity>
         <TouchableOpacity style={s.addBtn} onPress={handleAdd} activeOpacity={0.85} disabled={isOut}>
-          <ShoppingCart size={16} color="#fff" />
+          <ShoppingCart size={16} color={colors.primaryForeground} />
           <Text style={s.addBtnText}>{isOut ? "Stok Habis" : "Tambah Keranjang"}</Text>
         </TouchableOpacity>
       </View>

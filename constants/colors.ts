@@ -64,6 +64,7 @@ function light(
 ) {
   return {
     ...lightBase,
+    isDark: false,
     tint: primary,
     primary,
     accent,
@@ -87,6 +88,7 @@ function dark(
 ) {
   return {
     ...darkBase,
+    isDark: true,
     tint: primary,
     primary,
     accent,

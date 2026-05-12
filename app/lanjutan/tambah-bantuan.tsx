@@ -11,7 +11,9 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useColors } from "@/hooks/useColors";
 import { useDatabase } from "@/context/DatabaseContext";
+import { useAutoCloseDialog, DialogOverlay } from "@/app/universal/components/DialogOverlay";
 import * as LucideIcons from "lucide-react-native";
 import { ArrowLeft, ChevronRight, Tag, Link as LinkIcon, Plus, Search as SearchIcon, Smartphone } from "lucide-react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -33,8 +35,85 @@ const COLOR_PAIRS = [
 export default function TambahBantuan() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useColors();
   const { addBantuan } = useDatabase();
+  const { dialogContext, setDialogContext } = useAutoCloseDialog();
   
+  const s = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    header: { 
+      height: 56, 
+      flexDirection: "row", 
+      alignItems: "center", 
+      paddingHorizontal: 16, 
+      backgroundColor: colors.card,
+      borderBottomWidth: 0.5,
+      borderBottomColor: colors.border,
+    },
+    backBtn: { 
+      width: 36, 
+      height: 36, 
+      borderRadius: 10, 
+      backgroundColor: colors.secondary, 
+      alignItems: "center", 
+      justifyContent: "center", 
+      marginRight: 12 
+    },
+    headerTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground },
+    scrollContent: { padding: 12 },
+    previewCard: { 
+      backgroundColor: colors.card, 
+      borderRadius: 14, 
+      borderWidth: 0.5, 
+      borderColor: colors.border, 
+      padding: 14, 
+      flexDirection: "row", 
+      alignItems: "center", 
+      marginBottom: 10 
+    },
+    prevIconWrap: { width: 46, height: 46, borderRadius: 13, alignItems: "center", justifyContent: "center" },
+    prevInfo: { flex: 1, paddingHorizontal: 12 },
+    prevName: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 2 },
+    prevLink: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
+    fieldGroup: { 
+      backgroundColor: colors.card, 
+      borderRadius: 14, 
+      borderWidth: 0.5, 
+      borderColor: colors.border, 
+      overflow: "hidden", 
+      marginBottom: 10 
+    },
+    fieldRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, borderBottomWidth: 0.5, borderBottomColor: colors.secondary, minHeight: 52 },
+    fieldInner: { flex: 1, paddingVertical: 8, paddingHorizontal: 10 },
+    fieldLabel: { fontSize: 11, color: colors.mutedForeground, fontFamily: "Inter_500Medium", marginBottom: 2 },
+    input: { fontSize: 14, fontFamily: "Inter_400Regular", color: colors.foreground, padding: 0 },
+    iconSection: { backgroundColor: colors.card, borderRadius: 14, borderWidth: 0.5, borderColor: colors.border, overflow: "hidden", marginBottom: 10 },
+    iconSecHead: { padding: 13, paddingBottom: 0 },
+    secLabel: { fontSize: 11, fontFamily: "Inter_700Bold", color: colors.mutedForeground, textTransform: "uppercase", letterSpacing: 0.8 },
+    libTabs: { flexDirection: "row", gap: 6, marginVertical: 10 },
+    libTab: { flex: 1, height: 34, borderRadius: 8, borderWidth: 0.5, borderColor: colors.border, backgroundColor: colors.card, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5 },
+    libTabActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+    libTabText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
+    libTabTextActive: { color: colors.primaryForeground },
+    iconSearchRow: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: colors.secondary, borderRadius: 9, paddingHorizontal: 10, height: 38 },
+    searchInput: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: colors.foreground },
+    iconGridWrap: { padding: 14 },
+    iconCount: { fontSize: 10, color: colors.mutedForeground, marginBottom: 6 },
+    iconGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+    iconOpt: { width: 44, height: 44, borderRadius: 9, borderWidth: 0.5, borderColor: colors.border, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" },
+    iconOptSelected: { borderColor: colors.primary, backgroundColor: colors.secondary },
+    colorSection: { backgroundColor: colors.card, borderRadius: 14, borderWidth: 0.5, borderColor: colors.border, padding: 14, marginBottom: 10 },
+    colorGrid: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+    colorOpt: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "transparent" },
+    colorOptSelected: { borderColor: colors.foreground },
+    checkMark: { fontSize: 14, fontWeight: "700", color: "rgba(0,0,0,0.4)" },
+    bottomActions: { padding: 12, backgroundColor: colors.background, flexDirection: "row", gap: 8 },
+    btnCancel: { flex: 1, height: 48, backgroundColor: colors.card, borderRadius: 12, borderWidth: 0.5, borderColor: colors.border, alignItems: "center", justifyContent: "center" },
+    btnCancelText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
+    btnAdd: { flex: 1.6, height: 48, backgroundColor: colors.primary, borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
+    btnAddText: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primaryForeground }
+  });
+
   const [nama, setNama] = useState("");
   const [link, setLink] = useState("");
   const [activeLib, setActiveLib] = useState<"lucide" | "fa">("lucide");
@@ -52,9 +131,9 @@ export default function TambahBantuan() {
   }, [activeLib, iconName, selectedColor.ic]);
 
   const handleAdd = async () => {
-    if (!nama.trim()) return Alert.alert("Error", "Nama harus diisi");
-    if (!link.trim()) return Alert.alert("Error", "Link harus diisi");
-    if (!iconName.trim()) return Alert.alert("Error", "Nama ikon harus diisi");
+    if (!nama.trim()) return setDialogContext({ title: "Error", message: "Nama harus diisi" });
+    if (!link.trim()) return setDialogContext({ title: "Error", message: "Link harus diisi" });
+    if (!iconName.trim()) return setDialogContext({ title: "Error", message: "Nama ikon harus diisi" });
     
     await addBantuan({
       id: "bant-" + Date.now().toString(),
@@ -65,8 +144,12 @@ export default function TambahBantuan() {
       link: link.trim(),
     });
     
-    Alert.alert("Berhasil", `"${nama}" telah ditambahkan ke pusat bantuan`);
-    router.back();
+    setDialogContext({ 
+      title: "Berhasil", 
+      message: `"${nama}" telah ditambahkan ke pusat bantuan`,
+      onConfirm: () => router.back(),
+      onCancel: () => router.back()
+    });
   };
 
   return (
@@ -193,81 +276,9 @@ export default function TambahBantuan() {
           <Text style={s.btnAddText}>Tambah</Text>
         </TouchableOpacity>
       </View>
+      <DialogOverlay context={dialogContext} onClose={() => setDialogContext(null)} />
     </View>
   );
 }
 
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F0F2EE" },
-  header: { 
-    height: 56, 
-    flexDirection: "row", 
-    alignItems: "center", 
-    paddingHorizontal: 16, 
-    backgroundColor: "#fff",
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#ddd",
-  },
-  backBtn: { 
-    width: 36, 
-    height: 36, 
-    borderRadius: 10, 
-    backgroundColor: "#f5f5f5", 
-    alignItems: "center", 
-    justifyContent: "center", 
-    marginRight: 12 
-  },
-  headerTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1a1a1a" },
-  scrollContent: { padding: 12 },
-  previewCard: { 
-    backgroundColor: "#fff", 
-    borderRadius: 14, 
-    borderWidth: 0.5, 
-    borderColor: "#ddd", 
-    padding: 14, 
-    flexDirection: "row", 
-    alignItems: "center", 
-    marginBottom: 10 
-  },
-  prevIconWrap: { width: 46, height: 46, borderRadius: 13, alignItems: "center", justifyContent: "center" },
-  prevInfo: { flex: 1, paddingHorizontal: 12 },
-  prevName: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1a1a1a", marginBottom: 2 },
-  prevLink: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#aaa" },
-  fieldGroup: { 
-    backgroundColor: "#fff", 
-    borderRadius: 14, 
-    borderWidth: 0.5, 
-    borderColor: "#ddd", 
-    overflow: "hidden", 
-    marginBottom: 10 
-  },
-  fieldRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, borderBottomWidth: 0.5, borderBottomColor: "#f5f5f5", minHeight: 52 },
-  fieldInner: { flex: 1, paddingVertical: 8, paddingHorizontal: 10 },
-  fieldLabel: { fontSize: 11, color: "#aaa", fontFamily: "Inter_500Medium", marginBottom: 2 },
-  input: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#1a1a1a", padding: 0 },
-  iconSection: { backgroundColor: "#fff", borderRadius: 14, borderWidth: 0.5, borderColor: "#ddd", overflow: "hidden", marginBottom: 10 },
-  iconSecHead: { padding: 13, paddingBottom: 0 },
-  secLabel: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#aaa", textTransform: "uppercase", letterSpacing: 0.8 },
-  libTabs: { flexDirection: "row", gap: 6, marginVertical: 10 },
-  libTab: { flex: 1, height: 34, borderRadius: 8, borderWidth: 0.5, borderColor: "#ddd", backgroundColor: "#fff", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5 },
-  libTabActive: { backgroundColor: "#1A6640", borderColor: "#1A6640" },
-  libTabText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#666" },
-  libTabTextActive: { color: "#fff" },
-  iconSearchRow: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#f5f5f5", borderRadius: 9, paddingHorizontal: 10, height: 38 },
-  searchInput: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: "#1a1a1a" },
-  iconGridWrap: { padding: 14 },
-  iconCount: { fontSize: 10, color: "#ccc", marginBottom: 6 },
-  iconGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  iconOpt: { width: 44, height: 44, borderRadius: 9, borderWidth: 0.5, borderColor: "#eee", backgroundColor: "#fff", alignItems: "center", justifyContent: "center" },
-  iconOptSelected: { borderColor: "#1A6640", backgroundColor: "#EAF3DE" },
-  colorSection: { backgroundColor: "#fff", borderRadius: 14, borderWidth: 0.5, borderColor: "#ddd", padding: 14, marginBottom: 10 },
-  colorGrid: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  colorOpt: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "transparent" },
-  colorOptSelected: { borderColor: "#1a1a1a" },
-  checkMark: { fontSize: 14, fontWeight: "700", color: "rgba(0,0,0,0.4)" },
-  bottomActions: { padding: 12, backgroundColor: "#F0F2EE", flexDirection: "row", gap: 8 },
-  btnCancel: { flex: 1, height: 48, backgroundColor: "#fff", borderRadius: 12, borderWidth: 0.5, borderColor: "#ddd", alignItems: "center", justifyContent: "center" },
-  btnCancelText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#888" },
-  btnAdd: { flex: 1.6, height: 48, backgroundColor: "#1a6640", borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
-  btnAddText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" }
-});
+

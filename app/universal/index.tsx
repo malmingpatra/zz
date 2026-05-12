@@ -31,7 +31,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useCart, Product } from "@/context/CartContext";
 import { useDatabase } from "@/context/DatabaseContext";
-import CartModal from "@/components/CartModal";
+import KeranjangKasir from "@/app/universal/components/KeranjangKasir";
 import { auth } from "@/context/firebase-setup";
 import { onAuthStateChanged, signOut, User as FirebaseAuthUser } from "firebase/auth";
 
@@ -228,7 +228,7 @@ export default function POSScreen() {
     profileBtn: {
       width: 38, height: 38, borderRadius: 9,
       backgroundColor: colors.secondary,
-      borderWidth: 1, borderColor: colors.input,
+      borderWidth: 1, borderColor: colors.border,
       alignItems: "center", justifyContent: "center",
       flexShrink: 0,
     },
@@ -273,10 +273,10 @@ export default function POSScreen() {
     cartBadgeText: { color: "#fff", fontSize: 10, fontFamily: "Inter_700Bold" },
     switchBtn: {
       flexDirection: "row", alignItems: "center", gap: 8,
-      backgroundColor: "#fff", 
+      backgroundColor: colors.primary, 
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: "#DDD",
+      borderColor: colors.primary,
       paddingHorizontal: 12, 
       paddingVertical: 10,
       marginHorizontal: 14,
@@ -284,7 +284,7 @@ export default function POSScreen() {
       marginBottom: 5,
       justifyContent: "center",
     },
-    switchBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1A1A1A" },
+    switchBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.primaryForeground },
     list: { flex: 1 },
     listContent: { padding: 12, paddingBottom: insets.bottom + 12 },
     dropdownBackdrop: { flex: 1 },
@@ -356,7 +356,7 @@ export default function POSScreen() {
         <TouchableOpacity
           style={s.filterBtn}
           onPress={() => router.push({
-            pathname: "/filter",
+            pathname: "/universal/filter",
             params: { categories: activeCategories.join(",") }
           })}
           activeOpacity={0.8}
@@ -389,7 +389,7 @@ export default function POSScreen() {
         renderItem={({ item }) => (
           <ProductRow
             product={item}
-            onPress={() => router.push(`/produk/${item.id}`)}
+            onPress={() => router.push(`/universal/produk/${item.id}`)}
           />
         )}
         showsVerticalScrollIndicator={false}
@@ -431,7 +431,7 @@ export default function POSScreen() {
         }
       />
 
-      <CartModal visible={cartOpen} onClose={() => setCartOpen(false)} />
+      <KeranjangKasir visible={cartOpen} onClose={() => setCartOpen(false)} />
 
       {/* Profile Dropdown */}
       <Modal
@@ -456,10 +456,10 @@ export default function POSScreen() {
             {/* Mode Switch Button */}
             <TouchableOpacity 
               style={s.switchBtn} 
-              onPress={() => { setDropdownOpen(false); router.push("/dashboard"); }} 
+              onPress={() => { setDropdownOpen(false); router.push("/lanjutan/dashboard"); }} 
               activeOpacity={0.7}
             >
-              <ArrowRightLeft size={16} color="#1A1A1A" />
+              <ArrowRightLeft size={16} color={colors.primaryForeground} />
               <Text style={s.switchBtnText}>Switch Mode</Text>
             </TouchableOpacity>
 
@@ -469,7 +469,7 @@ export default function POSScreen() {
             <TouchableOpacity
               style={s.dropdownItem}
               activeOpacity={0.7}
-              onPress={() => { setDropdownOpen(false); router.push("/profil"); }}
+              onPress={() => { setDropdownOpen(false); router.push("/universal/profil"); }}
             >
               <Settings size={16} color={colors.foreground} />
               <Text style={s.dropdownItemText}>Pengaturan</Text>
@@ -486,7 +486,7 @@ export default function POSScreen() {
                 if (user) {
                   await signOut(auth);
                 } else {
-                  router.push("/login");
+                  router.push("/universal/login");
                 }
               }}
             >

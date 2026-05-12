@@ -44,10 +44,10 @@ export default function ResiScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { resi_id } = useLocalSearchParams<{ resi_id: string }>();
   const { orders, storeSettings } = useDatabase();
 
-  const order = orders.find((o) => o.id === id);
+  const order = orders.find((o) => o.id === resi_id);
 
   if (!order) {
     return (

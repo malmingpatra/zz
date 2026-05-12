@@ -17,6 +17,101 @@ import { useCart } from "@/context/CartContext";
 export default function FilterPage() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+
+  const s = StyleSheet.create({
+    container: { 
+      flex: 1, 
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingTop: insets.top + 10,
+      paddingBottom: 16,
+      backgroundColor: colors.topbar,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.topbarBorder,
+      gap: 12,
+    },
+    backBtn: {
+      width: 36, height: 36, borderRadius: 10,
+      backgroundColor: colors.secondary,
+      alignItems: "center", justifyContent: "center",
+    },
+    title: { flex: 1, fontSize: 16, fontFamily: "Inter_700Bold", color: colors.foreground },
+    resetBtn: {
+      paddingHorizontal: 12, paddingVertical: 5,
+      borderRadius: 8, borderWidth: 1, borderColor: colors.border,
+    },
+    resetText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
+    
+    content: { flex: 1 },
+    
+    searchSection: {
+      padding: 16,
+      backgroundColor: colors.card,
+      marginBottom: 12,
+    },
+    searchBox: {
+      flexDirection: "row", alignItems: "center",
+      backgroundColor: colors.secondary, borderRadius: 10,
+      borderWidth: 1, borderColor: colors.border,
+      paddingHorizontal: 10, height: 44, gap: 8,
+    },
+    searchInput: {
+      flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: colors.foreground,
+      padding: 0,
+      ...(Platform.OS === "web" ? ({ outlineWidth: 0 } as object) : {}),
+    },
+    
+    secLabel: {
+      fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground,
+      textTransform: "uppercase", letterSpacing: 0.8,
+      marginHorizontal: 16, marginBottom: 10,
+    },
+    catList: { 
+      backgroundColor: colors.card, 
+      paddingHorizontal: 16,
+      borderTopWidth: 1, borderTopColor: colors.border,
+      borderBottomWidth: 1, borderBottomColor: colors.border,
+    },
+    catRow: {
+      flexDirection: "row", alignItems: "center",
+      paddingVertical: 14,
+      borderBottomWidth: 1, borderBottomColor: colors.secondary,
+    },
+    catRowLast: { borderBottomWidth: 0 },
+    catCheck: {
+      width: 22, height: 22, borderRadius: 6,
+      borderWidth: 1.5, borderColor: colors.border,
+      alignItems: "center", justifyContent: "center",
+      marginRight: 12,
+    },
+    catCheckActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    catLabel: { flex: 1, fontSize: 14, fontFamily: "Inter_500Medium", color: colors.foreground },
+    catLabelActive: { color: colors.primary, fontFamily: "Inter_600SemiBold" },
+    catCount: {
+      fontSize: 12, fontFamily: "Inter_400Regular", color: colors.mutedForeground,
+    },
+    
+    footer: {
+      padding: 16,
+      backgroundColor: colors.card,
+      borderTopWidth: 1, borderTopColor: colors.border,
+      paddingBottom: insets.bottom + 16,
+    },
+    applyBtn: {
+      height: 48, backgroundColor: colors.primary,
+      borderRadius: 14, alignItems: "center", justifyContent: "center",
+      flexDirection: "row", gap: 8,
+    },
+    applyBtnText: { fontSize: 15, fontFamily: "Inter_700Bold", color: colors.primaryForeground },
+  });
+
   const router = useRouter();
   const params = useLocalSearchParams<{ categories?: string }>();
   const { products } = useCart();
@@ -74,99 +169,7 @@ export default function FilterPage() {
     c.toLowerCase().includes(search.toLowerCase())
   );
 
-  const s = StyleSheet.create({
-    container: { 
-      flex: 1, 
-      backgroundColor: "#F5F5F0",
-    },
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 16,
-      paddingTop: insets.top + 10,
-      paddingBottom: 16,
-      backgroundColor: "#fff",
-      borderBottomWidth: 1,
-      borderBottomColor: "#E4E4DC",
-      gap: 12,
-    },
-    backBtn: {
-      width: 36, height: 36, borderRadius: 10,
-      backgroundColor: "#F5F5F5",
-      alignItems: "center", justifyContent: "center",
-    },
-    title: { flex: 1, fontSize: 16, fontFamily: "Inter_700Bold", color: "#1A1A1A" },
-    resetBtn: {
-      paddingHorizontal: 12, paddingVertical: 5,
-      borderRadius: 8, borderWidth: 1, borderColor: "#E2DFD8",
-    },
-    resetText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#7A7870" },
-    
-    content: { flex: 1 },
-    
-    searchSection: {
-      padding: 16,
-      backgroundColor: "#fff",
-      marginBottom: 12,
-    },
-    searchBox: {
-      flexDirection: "row", alignItems: "center",
-      backgroundColor: "#F5F5F0", borderRadius: 10,
-      borderWidth: 1, borderColor: "#E4E4DC",
-      paddingHorizontal: 10, height: 44, gap: 8,
-    },
-    searchInput: {
-      flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: "#1A1A1A",
-      padding: 0,
-      ...(Platform.OS === "web" ? ({ outlineWidth: 0 } as object) : {}),
-    },
-    
-    secLabel: {
-      fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#aaa",
-      textTransform: "uppercase", letterSpacing: 0.8,
-      marginHorizontal: 16, marginBottom: 10,
-    },
-    catList: { 
-      backgroundColor: "#fff", 
-      paddingHorizontal: 16,
-      borderTopWidth: 1, borderTopColor: "#E4E4DC",
-      borderBottomWidth: 1, borderBottomColor: "#E4E4DC",
-    },
-    catRow: {
-      flexDirection: "row", alignItems: "center",
-      paddingVertical: 14,
-      borderBottomWidth: 1, borderBottomColor: "#F0EDE6",
-    },
-    catRowLast: { borderBottomWidth: 0 },
-    catCheck: {
-      width: 22, height: 22, borderRadius: 6,
-      borderWidth: 1.5, borderColor: "#DDDAD2",
-      alignItems: "center", justifyContent: "center",
-      marginRight: 12,
-    },
-    catCheckActive: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    catLabel: { flex: 1, fontSize: 14, fontFamily: "Inter_500Medium", color: "#1A1A1A" },
-    catLabelActive: { color: colors.primary, fontFamily: "Inter_600SemiBold" },
-    catCount: {
-      fontSize: 12, fontFamily: "Inter_400Regular", color: "#aaa",
-    },
-    
-    footer: {
-      padding: 16,
-      backgroundColor: "#fff",
-      borderTopWidth: 1, borderTopColor: "#E4E4DC",
-      paddingBottom: insets.bottom + 16,
-    },
-    applyBtn: {
-      height: 48, backgroundColor: colors.primary,
-      borderRadius: 14, alignItems: "center", justifyContent: "center",
-      flexDirection: "row", gap: 8,
-    },
-    applyBtnText: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#fff" },
-  });
+// Styles defined inside component
 
   const COUNTS: Record<string, number> = {
     Semua: 10, Makanan: 3, Minuman: 4, Sembako: 3, Lainnya: 1,

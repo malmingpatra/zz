@@ -22,6 +22,7 @@ import {
 import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useDatabase, Product } from "@/context/DatabaseContext";
+import { useAutoCloseDialog, DialogOverlay } from "@/app/universal/components/DialogOverlay";
 
 type EditField = "stok-harga" | "stok" | "harga";
 
@@ -35,6 +36,7 @@ export default function EditMassalScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { products, updateProduct } = useDatabase();
+  const { dialogContext, setDialogContext } = useAutoCloseDialog();
 
   // ── filter state ──
   const [search, setSearch] = useState("");
@@ -100,7 +102,7 @@ export default function EditMassalScreen() {
 
   async function handleSaveAll() {
     if (dirtyCount === 0) {
-      Alert.alert("Tidak ada perubahan", "Belum ada nilai yang diubah.");
+      setDialogContext({ title: "Tidak ada perubahan", message: "Belum ada nilai yang diubah." });
       return;
     }
     setSaving(true);
@@ -134,9 +136,9 @@ export default function EditMassalScreen() {
         newSaved.forEach((id) => delete next[id]);
         return next;
       });
-      Alert.alert("Berhasil", `${newSaved.size - savedIds.size + newSaved.size} produk berhasil diperbarui.`);
+      setDialogContext({ title: "Berhasil", message: `${newSaved.size - savedIds.size + newSaved.size} produk berhasil diperbarui.` });
     } catch (e: any) {
-      Alert.alert("Gagal", e?.message || "Terjadi kesalahan saat menyimpan.");
+      setDialogContext({ title: "Gagal", message: e?.message || "Terjadi kesalahan saat menyimpan." });
     } finally {
       setSaving(false);
     }
@@ -488,6 +490,8 @@ export default function EditMassalScreen() {
           </View>
         }
       />
+      
+      <DialogOverlay context={dialogContext} onClose={() => setDialogContext(null)} />
     </View>
   );
 }

@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { CartItem } from "@/context/CartContext";
+import { useDatabase } from "@/context/DatabaseContext";
 
 interface ReceiptModalProps {
   visible: boolean;
@@ -27,10 +28,6 @@ function fmt(n: number) {
   return "Rp " + n.toLocaleString("id-ID");
 }
 
-function pad(s: string, len: number) {
-  return s.length >= len ? s : s + " ".repeat(len - s.length);
-}
-
 export default function ReceiptModal({
   visible,
   onClose,
@@ -43,6 +40,8 @@ export default function ReceiptModal({
 }: ReceiptModalProps) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { storeSettings } = useDatabase();
+  
   const now = new Date();
   const dateStr = now.toLocaleDateString("id-ID", {
     day: "2-digit",
@@ -65,13 +64,13 @@ export default function ReceiptModal({
       padding: 20,
     },
     paper: {
-      backgroundColor: "#FAFAF7",
+      backgroundColor: colors.card,
       borderRadius: 12,
       width: "100%",
       maxHeight: "80%",
       overflow: "hidden",
       borderWidth: 1,
-      borderColor: "#E0E0D8",
+      borderColor: colors.border,
     },
     header: {
       backgroundColor: colors.primary,
@@ -80,16 +79,19 @@ export default function ReceiptModal({
       alignItems: "center",
     },
     storeName: {
-      color: "#fff",
+      color: colors.primaryForeground,
       fontSize: 18,
       fontFamily: "Inter_700Bold",
       letterSpacing: 1,
+      textAlign: "center",
     },
     storeTagline: {
-      color: "rgba(255,255,255,0.8)",
+      color: colors.primaryForeground,
+      opacity: 0.8,
       fontSize: 11,
       fontFamily: "Inter_400Regular",
       marginTop: 2,
+      textAlign: "center",
     },
     scroll: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
     meta: {
@@ -105,7 +107,7 @@ export default function ReceiptModal({
     divider: {
       borderStyle: "dashed",
       borderWidth: 1,
-      borderColor: "#D0D0C8",
+      borderColor: colors.border,
       marginVertical: 10,
     },
     itemRow: {
@@ -188,7 +190,7 @@ export default function ReceiptModal({
       alignItems: "center",
     },
     closeBtnText: {
-      color: "#fff",
+      color: colors.primaryForeground,
       fontSize: 15,
       fontFamily: "Inter_700Bold",
     },
@@ -199,8 +201,8 @@ export default function ReceiptModal({
       <View style={s.overlay}>
         <View style={s.paper}>
           <View style={s.header}>
-            <Text style={s.storeName}>WARUNG MAJU JAYA</Text>
-            <Text style={s.storeTagline}>Jl. Pasar No. 12, Jakarta</Text>
+            <Text style={s.storeName}>{storeSettings?.storeName || "NAMA TOKO"}</Text>
+            <Text style={s.storeTagline}>{storeSettings?.storeAddress || "ALAMAT TOKO"}</Text>
           </View>
 
           <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
