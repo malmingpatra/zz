@@ -142,45 +142,72 @@ export default function NotaScreen() {
     router.back();
   }
 
-function handlePrint() {
-  if (Platform.OS === 'web') {
-    const printContent = `
-      <div style="font-family:monospace;padding:20px;font-size:12px;max-width:300px;margin:0 auto">
-        <div style="text-align:center;font-weight:bold">${storeSettings?.storeName || "NAMA TOKO"}</div>
-        <div style="text-align:center">${storeSettings?.storeAddress || "ALAMAT TOKO"}</div>
-        <div style="border-top:1px dashed #000;margin:8px 0"></div>
-        <div style="display:flex;justify-content:space-between"><span>No. Nota</span><span>${invoiceId}</span></div>
-        <div style="display:flex;justify-content:space-between"><span>Tanggal</span><span>${dateStr}</span></div>
-        <div style="display:flex;justify-content:space-between"><span>Kasir</span><span>${order?.staff || "Kasir"}</span></div>
-        <div style="border-top:1px dashed #000;margin:8px 0"></div>
-        ${items.map(item => `
-          <div style="font-weight:bold">${item.name}</div>
-          <div style="display:flex;justify-content:space-between">
-            <span>${item.qty} x ${fmt(item.price)}</span>
-            <span>${fmt(item.qty * item.price)}</span>
+  function handlePrint() {
+    if (Platform.OS === "web") {
+      const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: monospace; padding: 20px; font-size: 12px; max-width: 300px; margin: 0 auto; color: #1a1a1a; }
+            .center { text-align: center; }
+            .bold { font-weight: bold; }
+            .row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+            .dashed { border-top: 1px dashed #000; margin: 8px 0; }
+            .solid { border-top: 1px solid #000; margin: 8px 0; }
+            .red { color: red; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="center bold" style="font-size:14px">${storeSettings?.storeName || "NAMA TOKO"}</div>
+          <div class="center" style="font-size:11px;color:#666">${storeSettings?.storeAddress || "ALAMAT TOKO"}</div>
+          <div class="dashed"></div>
+          <div class="row"><span>No. Nota</span><span>${invoiceId}</span></div>
+          <div class="row"><span>Tanggal</span><span>${dateStr}</span></div>
+          <div class="row"><span>Kasir</span><span>${order?.staff || "Kasir"}</span></div>
+          <div class="dashed"></div>
+          ${items.map((item: any) => `
+            <div class="bold">${item.name}</div>
+            <div class="row">
+              <span>${item.qty} x ${fmt(item.price)}</span>
+              <span>${fmt(item.qty * item.price)}</span>
+            </div>
+          `).join("")}
+          <div class="solid"></div>
+          <div class="row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
+          ${discountAmount > 0 ? `
+            <div class="row red">
+              <span>Diskon ${discountType === "pct" ? discountValue + "%" : ""}</span>
+              <span>-${fmt(discountAmount)}</span>
+            </div>
+          ` : ""}
+          <div class="row bold" style="font-size:13px;margin-top:4px">
+            <span>TOTAL</span>
+            <span>${fmt(total)}</span>
           </div>
-        `).join('')}
-        <div style="border-top:1px solid #000;margin:8px 0"></div>
-        <div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
-        ${discountAmount > 0 ? `<div style="display:flex;justify-content:space-between;color:red"><span>Diskon ${discountType === 'pct' ? discountValue + '%' : ''}</span><span>-${fmt(discountAmount)}</span></div>` : ''}
-        <div style="display:flex;justify-content:space-between;font-weight:bold"><span>TOTAL</span><span>${fmt(total)}</span></div>
-        <div style="border-top:1px dashed #000;margin:8px 0"></div>
-        <div style="text-align:center">Terima kasih atas kunjungan Anda!</div>
-        <div style="text-align:center">Barang yang sudah dibeli tidak dapat dikembalikan.</div>
-      </div>
-    `;
+          <div class="dashed"></div>
+          <div class="center" style="margin-top:4px">Terima kasih atas kunjungan Anda!</div>
+          <div class="center">Barang yang sudah dibeli tidak dapat dikembalikan.</div>
+        </body>
+        </html>
+      `;
 
-    const originalBody = document.body.innerHTML;
-    document.body.innerHTML = printContent;
-    window.print();
-    document.body.innerHTML = originalBody;
-    window.location.reload();
-  } else {
-    Alert.alert("Cetak Nota", "Struk berhasil dicetak!", [
-      { text: "OK", onPress: handleClose },
-    ]);
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        setTimeout(() => printWindow.print(), 500);
+      }
+    } else {
+      Alert.alert("Cetak Nota", "Struk berhasil dicetak!", [
+        { text: "OK", onPress: handleClose },
+      ]);
+    }
   }
-}
 
   return (
     <View style={s.container}>
@@ -221,7 +248,7 @@ function handlePrint() {
             <View style={s.dashes} />
 
             <View style={{ marginBottom: 4 }}>
-              {items.map((item, idx) => (
+              {items.map((item: any, idx: number) => (
                 <View key={item.id + "-" + idx} style={s.itemWrap}>
                   <Text style={s.itemName}>{item.name}</Text>
                   <View style={s.itemDetail}>
