@@ -136,8 +136,7 @@ export default function ResiScreen() {
           </div>
           <div class="dashed"></div>
           <div class="center" style="margin-top:4px;font-size:10px;color:#888">
-            Simpan resi ini sebagai bukti pengiriman.<br/>
-            Hubungi kami jika ada pertanyaan.
+            Hubungi kami jika ada pertanyaan.<br/>
           </div>
         </body>
         </html>
@@ -233,8 +232,7 @@ export default function ResiScreen() {
             <Barcode id={order.id} />
 
             <Text style={s_resi.footerText}>
-              Simpan resi ini sebagai bukti pengiriman.{"\n"}
-              Hubungi kami jika ada pertanyaan.
+              Hubungi kami jika ada pertanyaan.{"\n"}
             </Text>
           </View>
         </View>
