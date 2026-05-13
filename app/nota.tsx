@@ -191,7 +191,6 @@ export default function NotaScreen() {
           </div>
           <div class="dashed"></div>
           <div class="center" style="margin-top:4px">Terima kasih atas kunjungan Anda!</div>
-          <div class="center">Barang yang sudah dibeli tidak dapat dikembalikan.</div>
         </body>
         </html>
       `;
@@ -284,7 +283,6 @@ export default function NotaScreen() {
 
             <Text style={s.notaFooter}>
               Terima kasih atas kunjungan Anda!{"\n"}
-              Barang yang sudah dibeli tidak dapat dikembalikan.
             </Text>
           </View>
         </View>
