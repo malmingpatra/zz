@@ -117,6 +117,8 @@ interface DatabaseContextType {
   addBantuan: (b: Bantuan) => Promise<void>;
   cancelOrder: (id: string) => Promise<void>;
   updateOrderStatus: (id: string, newStatus: Order["status"], staffName?: string) => Promise<void>;
+  updateBantuan: (b: Bantuan) => Promise<void>;
+  deleteBantuan: (id: string) => Promise<void>;
   loading: boolean;
 }
 
@@ -408,9 +410,25 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
     await updateOrderStatus(id, "dibatalkan", "");
   };
 
+  const updateBantuan = async (b: Bantuan) => {
+    try {
+      await setDoc(doc(db, "bantuan", b.id), b);
+    } catch (e) {
+      handleFirestoreError(e, OperationType.UPDATE, "bantuan/" + b.id);
+    }
+  };
+
+  const deleteBantuan = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "bantuan", id));
+    } catch (e) {
+      handleFirestoreError(e, OperationType.DELETE, "bantuan/" + id);
+    }
+  };
+
   return (
     <DatabaseContext.Provider value={{
-      products, orders, members, bantuan, userProfile, storeSettings, updateStoreSettings, addProduct, updateProduct, deleteProduct, deleteOrder, addOrder, addBantuan, cancelOrder, updateOrderStatus, loading
+      products, orders, members, bantuan, userProfile, storeSettings, updateStoreSettings, addProduct, updateProduct, deleteProduct, deleteOrder, addOrder, addBantuan, updateBantuan, deleteBantuan, cancelOrder, updateOrderStatus, loading
     }}>
       {children}
     </DatabaseContext.Provider>

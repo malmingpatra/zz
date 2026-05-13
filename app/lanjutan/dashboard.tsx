@@ -41,6 +41,8 @@ import {
   Upload,
   SquarePen,
   Trash2,
+  Edit,
+  Users,
 } from "lucide-react-native";
 import NetInfo from "@react-native-community/netinfo";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -70,7 +72,7 @@ export default function KasirScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   
-  const { products, orders, members, bantuan, userProfile, storeSettings, updateStoreSettings, updateProduct, deleteProduct } = useDatabase();
+  const { products, orders, members, bantuan, userProfile, storeSettings, updateStoreSettings, updateProduct, deleteProduct, deleteBantuan } = useDatabase();
   
   const [namaToko, setNamaToko] = useState("");
   const [alamatToko, setAlamatToko] = useState("");
@@ -126,6 +128,7 @@ export default function KasirScreen() {
   const [orderSearch, setOrderSearch] = useState("");
   const [orderStatus, setOrderStatus] = useState("");
   const [showOrderAdvancedFilter, setShowOrderAdvancedFilter] = useState(false);
+  const [showAdminMembersList, setShowAdminMembersList] = useState(false);
   const [orderArea, setOrderArea] = useState("");
   const [orderAreaSearch, setOrderAreaSearch] = useState("");
   const [orderAreaPage, setOrderAreaPage] = useState(1);
@@ -172,7 +175,12 @@ export default function KasirScreen() {
   }, [productCategoriesRaw, productCatSearch]);
 
   const [memberSearch, setMemberSearch] = useState("");
-  const [memberFilter, setMemberFilter] = useState("semua");
+  const [memberRole, setMemberRole] = useState("");
+  const [memberArea, setMemberArea] = useState("");
+  const [memberAreaSearch, setMemberAreaSearch] = useState("");
+  const [memberAreaPage, setMemberAreaPage] = useState(1);
+  const [showMemberAdvancedFilter, setShowMemberAdvancedFilter] = useState(false);
+  const [selectedBantuan, setSelectedBantuan] = useState<Bantuan | null>(null);
   const [memberPage, setMemberPage] = useState(1);
   const [statPeriod, setStatPeriod] = useState("7hari");
   const [customDates, setCustomDates] = useState({
@@ -275,14 +283,26 @@ export default function KasirScreen() {
     }));
   }, [orders]);
 
+  const filteredMemberAreas = useMemo(() => {
+    const filtered = uniqueAreasAll.filter(a => a.toLowerCase().includes(memberAreaSearch.toLowerCase()));
+    const start = (memberAreaPage - 1) * 5;
+    return filtered.slice(start, start + 5);
+  }, [uniqueAreasAll, memberAreaSearch, memberAreaPage]);
+
+  const totalMemberAreaPages = useMemo(() => {
+    const filtered = uniqueAreasAll.filter(a => a.toLowerCase().includes(memberAreaSearch.toLowerCase()));
+    return Math.ceil(filtered.length / 5);
+  }, [uniqueAreasAll, memberAreaSearch]);
+
   const filteredMembers = useMemo(() => {
     return members.filter((m) => {
       const q = memberSearch.toLowerCase();
       const matchQ = !q || m.name.toLowerCase().includes(q);
-      const matchF = memberFilter === "semua" || m.status === memberFilter;
-      return matchQ && matchF;
+      const matchR = memberRole === "" || (m.role || "user") === memberRole;
+      const matchA = memberArea === "" || m.area === memberArea;
+      return matchQ && matchR && matchA;
     });
-  }, [members, memberSearch, memberFilter]);
+  }, [members, memberSearch, memberRole, memberArea]);
 
   const MEMBERS_PER_PAGE = 10;
   const paginatedMembers = useMemo(() => {
@@ -863,8 +883,8 @@ export default function KasirScreen() {
 
       {/* ── PESANAN ── */}
       {tab === "pesanan" && (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={s.sectionPad}>
+        <View style={{ flex: 1 }}>
+          <View style={[s.sectionPad, { paddingBottom: 0 }]}>
             <View style={{ flexDirection: "row", gap: 10, marginBottom: 12 }}>
               <View style={[s.searchBar, { flex: 1 }]}>
                 <Search size={15} color="#aaa" />
@@ -888,41 +908,7 @@ export default function KasirScreen() {
 
             {showOrderAdvancedFilter && (
               <View style={{ backgroundColor: colors.card, borderRadius: 12, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: colors.border }}>
-                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 8 }}>Tanggal Transaksi</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                  <TouchableOpacity 
-                    style={{ flex: 1, height: 48, backgroundColor: colors.secondary, borderRadius: 8, justifyContent: "center", paddingHorizontal: 12, borderWidth: 1, borderColor: colors.border }}
-                    onPress={() => {
-                      if (Platform.OS !== 'web') {
-                        setShowOrderDatePicker(true);
-                      }
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    {Platform.OS === 'web' ? (
-                       <input 
-                         type="date"
-                         value={orderDate}
-                         onChange={(e: any) => { setOrderDate(e.target.value); setOrderPage(1); }}
-                         style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', top: 0, left: 0 }}
-                       />
-                    ) : null}
-                    <Text style={{ fontSize: 13, fontFamily: "Inter_400Regular", color: orderDate ? colors.foreground : colors.mutedForeground }}>
-                      {orderDate || "Pilih Tanggal"}
-                    </Text>
-                  </TouchableOpacity>
-                  {orderDate !== "" && (
-                    <TouchableOpacity 
-                      style={{ width: 48, height: 48, backgroundColor: 'rgba(252, 235, 235, 0.2)', borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FCEBEB' }}
-                      onPress={() => setOrderDate("")}
-                      activeOpacity={0.7}
-                    >
-                      <X size={18} color="#FF6B6B" />
-                    </TouchableOpacity>
-                  )}
-                </View>
-
-                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 8 }}>Status Pesanan</Text>
+                
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
                   {["menunggu", "dikirim", "selesai", "dibatalkan"].map((st) => (
                     <TouchableOpacity
@@ -941,54 +927,89 @@ export default function KasirScreen() {
                   ))}
                 </ScrollView>
 
-                <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 8 }}>Area Customer</Text>
-                <View style={[s.searchBar, { height: 36, marginBottom: 10, backgroundColor: colors.secondary, borderColor: "transparent" }]}>
-                  <Search size={14} color={colors.mutedForeground} />
-                  <TextInput 
-                    style={[s.searchInput, { fontSize: 12 }]} 
-                    placeholder="Cari area..." 
-                    placeholderTextColor={colors.mutedForeground}
-                    value={orderAreaSearch} 
-                    onChangeText={(t) => { setOrderAreaSearch(t); setOrderAreaPage(1); }} 
-                  />
-                </View>
-                  <View style={{ marginBottom: 16 }}>
-                    {filteredAreas.map((ar) => (
-                      <TouchableOpacity
-                        key={ar}
-                        style={{
-                          paddingVertical: 8,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          borderBottomWidth: 1,
-                          borderBottomColor: '#F0F2EE'
-                        }}
-                        onPress={() => { setOrderArea(orderArea === ar ? "" : ar); setOrderPage(1); }}
-                      >
-                        <Text style={{ fontSize: 13, fontFamily: "Inter_500Medium", color: orderArea === ar ? colors.primary : "#4A4840" }}>
-                          {ar}
-                        </Text>
-                        {orderArea === ar && <LucideIcons.Check size={16} color={colors.primary} />}
-                      </TouchableOpacity>
-                    ))}
-                    {filteredAreas.length === 0 && (
-                      <Text style={{ fontSize: 12, color: '#aaa', fontStyle: 'italic' }}>Tidak ada area ditemukan</Text>
-                    )}
-                    
-                    {totalAreaPages > 1 && (
-                      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, marginTop: 8 }}>
-                        <TouchableOpacity onPress={() => setOrderAreaPage(p => Math.max(1, p - 1))} disabled={orderAreaPage === 1}>
-                          <ChevronLeft size={18} color={orderAreaPage === 1 ? "#ccc" : colors.primary} />
-                        </TouchableOpacity>
-                        <Text style={{ fontSize: 11, color: "#666" }}>{orderAreaPage}/{totalAreaPages}</Text>
-                        <TouchableOpacity onPress={() => setOrderAreaPage(p => Math.min(totalAreaPages, p + 1))} disabled={orderAreaPage === totalAreaPages}>
-                          <ChevronRight size={18} color={orderAreaPage === totalAreaPages ? "#ccc" : colors.primary} />
-                        </TouchableOpacity>
-                      </View>
-                    )}
+                <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16, alignItems: 'center' }}>
+                  <View style={[s.searchBar, { flex: 1, height: 44, backgroundColor: colors.secondary, borderColor: "transparent", marginBottom: 0 }]}>
+                    <Search size={14} color={colors.mutedForeground} />
+                    <TextInput 
+                      style={[s.searchInput, { fontSize: 12 }]} 
+                      placeholder="Cari area..." 
+                      placeholderTextColor={colors.mutedForeground}
+                      value={orderAreaSearch} 
+                      onChangeText={(t) => { setOrderAreaSearch(t); setOrderAreaPage(1); }} 
+                    />
                   </View>
+                  
+                  <TouchableOpacity 
+                    style={{ 
+                      width: 44, height: 44, borderRadius: 8, 
+                      backgroundColor: orderDate ? colors.primary : colors.secondary, 
+                      alignItems: "center", justifyContent: "center" 
+                    }}
+                    onPress={() => {
+                      if (Platform.OS !== 'web') {
+                        setShowOrderDatePicker(true);
+                      }
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    {Platform.OS === 'web' ? (
+                       <input 
+                         type="date"
+                         value={orderDate}
+                         onChange={(e: any) => { setOrderDate(e.target.value); setOrderPage(1); }}
+                         style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer', top: 0, left: 0 }}
+                       />
+                    ) : null}
+                    <Calendar size={18} color={orderDate ? colors.primaryForeground : colors.mutedForeground} />
+                  </TouchableOpacity>
+                  {orderDate !== "" && (
+                    <TouchableOpacity 
+                      style={{ width: 44, height: 44, backgroundColor: colors.destructive + '15', borderRadius: 8, alignItems: 'center', justifyContent: 'center' }}
+                      onPress={() => { setOrderDate(""); setOrderPage(1); }}
+                      activeOpacity={0.7}
+                    >
+                      <X size={18} color={colors.destructive} />
+                    </TouchableOpacity>
+                  )}
                 </View>
+
+                <View style={{ marginBottom: 4 }}>
+                  {filteredAreas.map((ar) => (
+                    <TouchableOpacity
+                      key={ar}
+                      style={{
+                        paddingVertical: 8,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        borderBottomWidth: 1,
+                        borderBottomColor: colors.secondary
+                      }}
+                      onPress={() => { setOrderArea(orderArea === ar ? "" : ar); setOrderPage(1); }}
+                    >
+                      <Text style={{ fontSize: 13, fontFamily: "Inter_500Medium", color: orderArea === ar ? colors.primary : colors.foreground }}>
+                        {ar}
+                      </Text>
+                      {orderArea === ar && <LucideIcons.Check size={16} color={colors.primary} />}
+                    </TouchableOpacity>
+                  ))}
+                  {filteredAreas.length === 0 && (
+                    <Text style={{ fontSize: 12, color: colors.mutedForeground, fontStyle: 'italic' }}>Tidak ada area ditemukan</Text>
+                  )}
+                  
+                  {totalAreaPages > 1 && (
+                    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, marginTop: 12 }}>
+                      <TouchableOpacity onPress={() => setOrderAreaPage(p => Math.max(1, p - 1))} disabled={orderAreaPage === 1}>
+                        <ChevronLeft size={18} color={orderAreaPage === 1 ? colors.border : colors.primary} />
+                      </TouchableOpacity>
+                      <Text style={{ fontSize: 11, color: colors.mutedForeground }}>{orderAreaPage}/{totalAreaPages}</Text>
+                      <TouchableOpacity onPress={() => setOrderAreaPage(p => Math.min(totalAreaPages, p + 1))} disabled={orderAreaPage === totalAreaPages}>
+                        <ChevronRight size={18} color={orderAreaPage === totalAreaPages ? colors.border : colors.primary} />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              </View>
             )}
 
             {Platform.OS !== 'web' && showOrderDatePicker && (
@@ -1009,7 +1030,9 @@ export default function KasirScreen() {
                 }}
               />
             )}
-
+          </View>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={[s.sectionPad, { paddingTop: 0 }]}>
             {filteredOrders.length === 0 ? (
               <View style={s.emptyBox}>
                 <Inbox size={32} color="#ccc" />
@@ -1067,6 +1090,7 @@ export default function KasirScreen() {
             )}
           </View>
         </ScrollView>
+        </View>
       )}
 
       {/* ── PRODUK ── */}
@@ -1152,48 +1176,33 @@ export default function KasirScreen() {
             </View>
           )}
 
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={s.sectionPad}>
-              <View style={{ flexDirection: "row", gap: 10, marginBottom: 12 }}>
-                <View style={[s.searchBar, { flex: 1 }]}>
-                  <Search size={15} color="#aaa" />
-                  <TextInput
-                    style={s.searchInput}
-                    value={productSearch}
-                    onChangeText={(t) => { setProductSearch(t); setProductPage(1); }}
-                    placeholder="Cari produk..."
-                    placeholderTextColor="#bbb"
-                    underlineColorAndroid="transparent"
-                  />
-                </View>
-                <TouchableOpacity 
-                  style={[s.searchBar, { width: 44, paddingHorizontal: 0, justifyContent: "center" }, showProductAdvancedFilter && { backgroundColor: "black" }]} 
-                  activeOpacity={0.7}
-                  onPress={() => setShowProductAdvancedFilter(!showProductAdvancedFilter)}
-                >
-                  <SlidersHorizontal size={18} color={showProductAdvancedFilter ? colors.primaryForeground : colors.mutedForeground} />
-                </TouchableOpacity>
+          <View style={[s.sectionPad, { paddingBottom: 0 }]}>
+            <View style={{ flexDirection: "row", gap: 10, marginBottom: 12 }}>
+              <View style={[s.searchBar, { flex: 1 }]}>
+                <Search size={15} color="#aaa" />
+                <TextInput
+                  style={s.searchInput}
+                  value={productSearch}
+                  onChangeText={(t) => { setProductSearch(t); setProductPage(1); }}
+                  placeholder="Cari produk..."
+                  placeholderTextColor="#bbb"
+                  underlineColorAndroid="transparent"
+                />
               </View>
+              <TouchableOpacity 
+                style={[s.searchBar, { width: 44, paddingHorizontal: 0, justifyContent: "center" }, showProductAdvancedFilter && { backgroundColor: "black" }]} 
+                activeOpacity={0.7}
+                onPress={() => setShowProductAdvancedFilter(!showProductAdvancedFilter)}
+              >
+                <SlidersHorizontal size={18} color={showProductAdvancedFilter ? colors.primaryForeground : colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
 
-              {showProductAdvancedFilter && (
-                <View style={{ backgroundColor: colors.card, borderRadius: 12, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: colors.border }}>
-                  <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 8 }}>Stok</Text>
-                  <View style={{ flexDirection: 'row', marginBottom: 16 }}>
-                    <TouchableOpacity
-                      style={{
-                        paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16,
-                        backgroundColor: productStockLow ? colors.primary : colors.secondary,
-                      }}
-                      onPress={() => { setProductStockLow(!productStockLow); setProductPage(1); }}
-                    >
-                      <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: productStockLow ? colors.primaryForeground : colors.foreground }}>
-                        Stok 0-10
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 8 }}>Kategori Produk</Text>
-                  <View style={[s.searchBar, { height: 36, marginBottom: 10, backgroundColor: colors.secondary, borderColor: "transparent" }]}>
+            {showProductAdvancedFilter && (
+              <View style={{ backgroundColor: colors.card, borderRadius: 12, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: colors.border }}>
+                
+                <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16, alignItems: 'center' }}>
+                  <View style={[s.searchBar, { flex: 1, height: 44, backgroundColor: colors.secondary, borderColor: "transparent", marginBottom: 0 }]}>
                     <Search size={14} color={colors.mutedForeground} />
                     <TextInput 
                       style={[s.searchInput, { fontSize: 12 }]} 
@@ -1203,82 +1212,98 @@ export default function KasirScreen() {
                       onChangeText={(t) => { setProductCatSearch(t); setProductCatFilterPage(1); }} 
                     />
                   </View>
-                  <View style={{ marginBottom: 8 }}>
-                    {filteredCategories.map((c) => (
-                      <TouchableOpacity
-                        key={c}
-                        style={{
-                          paddingVertical: 8,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          borderBottomWidth: 1,
-                          borderBottomColor: colors.secondary
-                        }}
-                        onPress={() => { setProductCat(productCat === c ? "Semua" : c); setProductPage(1); }}
-                      >
-                        <Text style={{ fontSize: 13, fontFamily: "Inter_500Medium", color: productCat === c ? colors.primary : colors.foreground }}>
-                          {c}
-                        </Text>
-                        {productCat === c && <LucideIcons.Check size={16} color={colors.primary} />}
-                      </TouchableOpacity>
-                    ))}
-                    {filteredCategories.length === 0 && (
-                      <Text style={{ fontSize: 12, color: colors.mutedForeground, fontStyle: 'italic' }}>Tidak ada kategori ditemukan</Text>
-                    )}
-
-                    {totalCatFilterPages > 1 && (
-                      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, marginTop: 8 }}>
-                        <TouchableOpacity onPress={() => setProductCatFilterPage(p => Math.max(1, p - 1))} disabled={productCatFilterPage === 1}>
-                          <ChevronLeft size={18} color={productCatFilterPage === 1 ? colors.border : colors.primary} />
-                        </TouchableOpacity>
-                        <Text style={{ fontSize: 11, color: colors.mutedForeground }}>{productCatFilterPage}/{totalCatFilterPages}</Text>
-                        <TouchableOpacity onPress={() => setProductCatFilterPage(p => Math.min(totalCatFilterPages, p + 1))} disabled={productCatFilterPage === totalCatFilterPages}>
-                          <ChevronRight size={18} color={productCatFilterPage === totalCatFilterPages ? colors.border : colors.primary} />
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
+                  <TouchableOpacity
+                    style={{
+                      paddingHorizontal: 16, height: 44, borderRadius: 8,
+                      backgroundColor: productStockLow ? colors.primary : colors.secondary,
+                      alignItems: "center", justifyContent: "center"
+                    }}
+                    onPress={() => { setProductStockLow(!productStockLow); setProductPage(1); }}
+                  >
+                    <Text style={{ fontSize: 14, fontFamily: "Inter_600SemiBold", color: productStockLow ? colors.primaryForeground : colors.foreground }}>
+                      &lt; 10
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-              )}
 
-              <View style={s.actionRow}>
-                <TouchableOpacity
-                  style={[s.actionBtn, backupLoading && { opacity: 0.6 }]}
-                  activeOpacity={0.7}
-                  onPress={handleBackup}
-                  disabled={backupLoading}
-                >
-                  <Download size={14} color={colors.primary} />
-                  <Text style={[s.actionBtnText, { color: colors.primary }]}>Backup</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[s.actionBtn, restoreLoading && { opacity: 0.6 }]}
-                  activeOpacity={0.7}
-                  onPress={handleRestore}
-                  disabled={restoreLoading}
-                >
-                  <Upload size={14} color="#555" />
-                  <Text style={s.actionBtnText}>Restore</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={s.actionBtn}
-                  activeOpacity={0.7}
-                  onPress={() => router.push("/lanjutan/edit-massal")}
-                >
-                  <SquarePen size={14} color="#555" />
-                  <Text style={s.actionBtnText}>Edit Massal</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[s.actionBtn, { backgroundColor: colors.primary, borderColor: colors.primary }]}
-                  activeOpacity={0.8}
-                  onPress={() => router.push("/lanjutan/tambah-produk")}
-                >
-                  <Plus size={14} color="#fff" />
-                  <Text style={[s.actionBtnText, { color: "#fff" }]}>Tambah</Text>
-                </TouchableOpacity>
+                <View style={{ marginBottom: 4 }}>
+                  {filteredCategories.map((c) => (
+                    <TouchableOpacity
+                      key={c}
+                      style={{
+                        paddingVertical: 8,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        borderBottomWidth: 1,
+                        borderBottomColor: colors.secondary
+                      }}
+                      onPress={() => { setProductCat(productCat === c ? "Semua" : c); setProductPage(1); }}
+                    >
+                      <Text style={{ fontSize: 13, fontFamily: "Inter_500Medium", color: productCat === c ? colors.primary : colors.foreground }}>
+                        {c}
+                      </Text>
+                      {productCat === c && <LucideIcons.Check size={16} color={colors.primary} />}
+                    </TouchableOpacity>
+                  ))}
+                  {filteredCategories.length === 0 && (
+                    <Text style={{ fontSize: 12, color: colors.mutedForeground, fontStyle: 'italic' }}>Tidak ada kategori ditemukan</Text>
+                  )}
+
+                  {totalCatFilterPages > 1 && (
+                    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, marginTop: 12 }}>
+                      <TouchableOpacity onPress={() => setProductCatFilterPage(p => Math.max(1, p - 1))} disabled={productCatFilterPage === 1}>
+                        <ChevronLeft size={18} color={productCatFilterPage === 1 ? colors.border : colors.primary} />
+                      </TouchableOpacity>
+                      <Text style={{ fontSize: 11, color: colors.mutedForeground }}>{productCatFilterPage}/{totalCatFilterPages}</Text>
+                      <TouchableOpacity onPress={() => setProductCatFilterPage(p => Math.min(totalCatFilterPages, p + 1))} disabled={productCatFilterPage === totalCatFilterPages}>
+                        <ChevronRight size={18} color={productCatFilterPage === totalCatFilterPages ? colors.border : colors.primary} />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
               </View>
+            )}
 
+            <View style={s.actionRow}>
+              <TouchableOpacity
+                style={[s.actionBtn, backupLoading && { opacity: 0.6 }]}
+                activeOpacity={0.7}
+                onPress={handleBackup}
+                disabled={backupLoading}
+              >
+                <Download size={14} color={colors.primary} />
+                <Text style={[s.actionBtnText, { color: colors.primary }]}>Backup</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.actionBtn, restoreLoading && { opacity: 0.6 }]}
+                activeOpacity={0.7}
+                onPress={handleRestore}
+                disabled={restoreLoading}
+              >
+                <Upload size={14} color="#555" />
+                <Text style={s.actionBtnText}>Restore</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={s.actionBtn}
+                activeOpacity={0.7}
+                onPress={() => router.push("/lanjutan/edit-massal")}
+              >
+                <SquarePen size={14} color="#555" />
+                <Text style={s.actionBtnText}>Edit Massal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.actionBtn, { backgroundColor: colors.primary, borderColor: colors.primary }]}
+                activeOpacity={0.8}
+                onPress={() => router.push("/lanjutan/tambah-produk")}
+              >
+                <Plus size={14} color="#fff" />
+                <Text style={[s.actionBtnText, { color: "#fff" }]}>Tambah</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={[s.sectionPad, { paddingTop: 0 }]}>
               {paginatedProducts.length === 0 ? (
                 <View style={s.emptyBox}>
                   <Inbox size={32} color="#ccc" />
@@ -1688,6 +1713,164 @@ export default function KasirScreen() {
       {tab === "admin" && (
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={s.sectionPad}>
+            {/* Members */}
+            <View style={[s.bantHdr, { marginBottom: 12 }]}>
+              <Text style={s.bantTitle}>Daftar Member</Text>
+              <TouchableOpacity onPress={() => setShowAdminMembersList(!showAdminMembersList)} activeOpacity={0.7}>
+                <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: colors.primary }}>
+                  {showAdminMembersList ? 'Sembunyikan' : 'Tampilkan'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            
+            {showAdminMembersList && (
+              <>
+                <View style={{ flexDirection: "row", gap: 10, marginBottom: 12 }}>
+                  <View style={[s.searchBar, { flex: 1 }]}>
+                    <Search size={15} color="#aaa" />
+                    <TextInput
+                      style={s.searchInput}
+                      value={memberSearch}
+                      onChangeText={(t) => { setMemberSearch(t); setMemberPage(1); }}
+                      placeholder="Cari member..."
+                      placeholderTextColor="#bbb"
+                      underlineColorAndroid="transparent"
+                    />
+                  </View>
+                  <TouchableOpacity 
+                    style={[
+                      s.searchBar, 
+                      { width: 44, paddingHorizontal: 0, justifyContent: "center" },
+                      showMemberAdvancedFilter && { backgroundColor: colors.primary, borderColor: colors.primary }
+                    ]} 
+                    activeOpacity={0.7}
+                    onPress={() => setShowMemberAdvancedFilter(!showMemberAdvancedFilter)}
+                  >
+                    <SlidersHorizontal size={18} color={showMemberAdvancedFilter ? colors.primaryForeground : "#555"} />
+                  </TouchableOpacity>
+                </View>
+
+                {showMemberAdvancedFilter && (
+                  <View style={{ backgroundColor: colors.card, borderRadius: 12, padding: 16, marginBottom: 14, borderWidth: 1, borderColor: colors.border }}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+                      {["admin", "staff", "pelanggan", "user"].map((role) => (
+                        <TouchableOpacity
+                          key={role}
+                          style={{
+                            paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16,
+                            backgroundColor: memberRole === role ? colors.primary : colors.secondary,
+                            marginRight: 8
+                          }}
+                          onPress={() => { setMemberRole(memberRole === role ? "" : role); setMemberPage(1); }}
+                        >
+                          <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: memberRole === role ? colors.primaryForeground : colors.mutedForeground, textTransform: 'capitalize' }}>
+                            {role}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+
+                    <View style={{ marginBottom: 4 }}>
+                      <View style={[s.searchBar, { height: 44, backgroundColor: colors.secondary, borderColor: "transparent", marginBottom: 12 }]}>
+                        <Search size={14} color={colors.mutedForeground} />
+                        <TextInput 
+                          style={[s.searchInput, { fontSize: 12 }]} 
+                          placeholder="Cari area..." 
+                          placeholderTextColor={colors.mutedForeground}
+                          value={memberAreaSearch} 
+                          onChangeText={(t) => { setMemberAreaSearch(t); setMemberAreaPage(1); }} 
+                        />
+                      </View>
+
+                      {filteredMemberAreas.map((ar) => (
+                        <TouchableOpacity
+                          key={ar}
+                          style={{
+                            paddingVertical: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            borderBottomWidth: 1,
+                            borderBottomColor: colors.secondary
+                          }}
+                          onPress={() => { setMemberArea(memberArea === ar ? "" : ar); setMemberPage(1); }}
+                        >
+                          <Text style={{ fontSize: 13, fontFamily: "Inter_500Medium", color: memberArea === ar ? colors.primary : colors.foreground }}>
+                            {ar}
+                          </Text>
+                          {memberArea === ar && <LucideIcons.Check size={16} color={colors.primary} />}
+                        </TouchableOpacity>
+                      ))}
+                      {filteredMemberAreas.length === 0 && (
+                        <Text style={{ fontSize: 12, color: colors.mutedForeground, fontStyle: 'italic' }}>Tidak ada area ditemukan</Text>
+                      )}
+                      
+                      {totalMemberAreaPages > 1 && (
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12, marginTop: 12 }}>
+                          <TouchableOpacity onPress={() => setMemberAreaPage(p => Math.max(1, p - 1))} disabled={memberAreaPage === 1}>
+                            <ChevronLeft size={18} color={memberAreaPage === 1 ? colors.border : colors.primary} />
+                          </TouchableOpacity>
+                          <Text style={{ fontSize: 11, color: colors.mutedForeground }}>{memberAreaPage}/{totalMemberAreaPages}</Text>
+                          <TouchableOpacity onPress={() => setMemberAreaPage(p => Math.min(totalMemberAreaPages, p + 1))} disabled={memberAreaPage === totalMemberAreaPages}>
+                            <ChevronRight size={18} color={memberAreaPage === totalMemberAreaPages ? colors.border : colors.primary} />
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                )}
+
+                {filteredMembers.length === 0 ? (
+                  <View style={s.emptyBox}>
+                    <User size={32} color="#ccc" />
+                    <Text style={s.emptyText}>Belum ada member</Text>
+                  </View>
+                ) : (
+                  <>
+                    {paginatedMembers.map((m) => (
+                      <TouchableOpacity
+                        key={m.id || m.name}
+                        style={s.memberCard}
+                        onPress={() => router.push({ pathname: "/member/[member_id]", params: { member_id: m.id } })}
+                        activeOpacity={0.75}
+                      >
+                        <View style={s.memberAvatar}>
+                          <Text style={s.memberInitials}>{m.initials || m.name?.charAt(0) || "?"}</Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={s.memberName}>{m.name || "Unknown Member"}</Text>
+                          <Text style={s.memberSub}>{m.sub || "Member"}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+
+                    {/* Member Pagination Controls */}
+                    {totalMemberPages > 1 && (
+                      <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 20, marginTop: 10, marginBottom: 10 }}>
+                        <TouchableOpacity 
+                          onPress={() => setMemberPage(v => Math.max(1, v - 1))}
+                          disabled={memberPage === 1}
+                          style={{ opacity: memberPage === 1 ? 0.3 : 1 }}
+                        >
+                          <ChevronLeft size={24} color={colors.primary} />
+                        </TouchableOpacity>
+                    <Text style={{ fontSize: 13, fontFamily: 'Inter_600SemiBold', color: colors.foreground }}>
+                      Halaman {memberPage} dari {totalMemberPages}
+                    </Text>
+                        <TouchableOpacity 
+                          onPress={() => setMemberPage(v => Math.min(totalMemberPages, v + 1))}
+                          disabled={memberPage === totalMemberPages}
+                          style={{ opacity: memberPage === totalMemberPages ? 0.3 : 1 }}
+                        >
+                          <ChevronRight size={24} color={colors.primary} />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+
             {/* Informasi Toko */}
             <View style={[s.bantHdr, { marginBottom: 12 }]}>
               <Text style={s.bantTitle}>Informasi Toko</Text>
@@ -1727,86 +1910,6 @@ export default function KasirScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Members */}
-            <View style={[s.bantHdr, { marginBottom: 12 }]}>
-              <Text style={s.bantTitle}>Daftar Member</Text>
-            </View>
-            <View style={{ flexDirection: "row", gap: 10, marginBottom: 12 }}>
-              <View style={[s.searchBar, { flex: 1 }]}>
-                <Search size={15} color="#aaa" />
-                <TextInput
-                  style={s.searchInput}
-                  value={memberSearch}
-                  onChangeText={(t) => { setMemberSearch(t); setMemberPage(1); }}
-                  placeholder="Cari member..."
-                  placeholderTextColor="#bbb"
-                  underlineColorAndroid="transparent"
-                />
-              </View>
-              <TouchableOpacity 
-                style={[s.searchBar, { width: 44, paddingHorizontal: 0, justifyContent: "center" }]} 
-                activeOpacity={0.7}
-              >
-                <SlidersHorizontal size={18} color="#555" />
-              </TouchableOpacity>
-            </View>
-            {filteredMembers.length === 0 ? (
-              <View style={s.emptyBox}>
-                <User size={32} color="#ccc" />
-                <Text style={s.emptyText}>Belum ada member</Text>
-              </View>
-            ) : (
-              <>
-                {paginatedMembers.map((m) => (
-                  <TouchableOpacity
-                    key={m.id || m.name}
-                    style={s.memberCard}
-                    onPress={() => router.push({ pathname: "/member/[member_id]", params: { member_id: m.id } })}
-                    activeOpacity={0.75}
-                  >
-                    <View style={s.memberAvatar}>
-                      <Text style={s.memberInitials}>{m.initials || m.name?.charAt(0) || "?"}</Text>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={s.memberName}>{m.name || "Unknown Member"}</Text>
-                      <Text style={s.memberSub}>{m.sub || "Member"}</Text>
-                    </View>
-                    <Text style={[
-                      s.memberStatus,
-                      m.status === "aktif"
-                        ? { backgroundColor: colors.stokOkBg, color: colors.stokOkText }
-                        : { backgroundColor: colors.secondary, color: colors.mutedForeground },
-                    ]}>
-                      {m.status === "aktif" ? "Aktif" : "Non-aktif"}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-
-                {/* Member Pagination Controls */}
-                {totalMemberPages > 1 && (
-                  <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 20, marginTop: 10, marginBottom: 10 }}>
-                    <TouchableOpacity 
-                      onPress={() => setMemberPage(v => Math.max(1, v - 1))}
-                      disabled={memberPage === 1}
-                      style={{ opacity: memberPage === 1 ? 0.3 : 1 }}
-                    >
-                      <ChevronLeft size={24} color={colors.primary} />
-                    </TouchableOpacity>
-                <Text style={{ fontSize: 13, fontFamily: 'Inter_600SemiBold', color: colors.foreground }}>
-                  Halaman {memberPage} dari {totalMemberPages}
-                </Text>
-                    <TouchableOpacity 
-                      onPress={() => setMemberPage(v => Math.min(totalMemberPages, v + 1))}
-                      disabled={memberPage === totalMemberPages}
-                      style={{ opacity: memberPage === totalMemberPages ? 0.3 : 1 }}
-                    >
-                      <ChevronRight size={24} color={colors.primary} />
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </>
-            )}
-
             {/* Bantuan */}
             <View style={[s.bantHdr, { marginTop: 16 }]}>
               <Text style={s.bantTitle}>Pusat Bantuan</Text>
@@ -1820,7 +1923,7 @@ export default function KasirScreen() {
               </TouchableOpacity>
             </View>
             {bantuan.map((b) => (
-              <TouchableOpacity key={b.name} style={s.bantCard} activeOpacity={0.7}>
+              <TouchableOpacity key={b.name} style={s.bantCard} activeOpacity={0.7} onPress={() => setSelectedBantuan(b)}>
                 <View style={[s.bantIconBox, { backgroundColor: b.bg }]}>
                   {(() => {
                     // Try dynamic Lucide icon first
@@ -1835,6 +1938,64 @@ export default function KasirScreen() {
             ))}
           </View>
         </ScrollView>
+      )}
+
+      {/* Bantuan Options Modal */}
+      {selectedBantuan && (
+        <View style={StyleSheet.absoluteFill}>
+          <TouchableOpacity 
+            style={{flex: 1, backgroundColor: "rgba(0,0,0,0.5)"}} 
+            activeOpacity={1} 
+            onPress={() => setSelectedBantuan(null)} 
+          />
+          <View style={{
+            position: "absolute", bottom: 0, left: 0, right: 0,
+            backgroundColor: colors.card, borderTopLeftRadius: 20, borderTopRightRadius: 20,
+            padding: 24, paddingBottom: insets.bottom + 24
+          }}>
+            <Text style={{fontSize: 16, fontFamily: "Inter_700Bold", color: colors.foreground, marginBottom: 20, textAlign: "center"}}>
+              Opsi Bantuan
+            </Text>
+            
+            <TouchableOpacity 
+              style={{flexDirection: "row", alignItems: "center", paddingVertical: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: colors.border}}
+              onPress={() => {
+                 router.push(`/lanjutan/tambah-bantuan?id=${selectedBantuan.id}`);
+                 setSelectedBantuan(null);
+              }}
+            >
+              <Edit size={20} color={colors.primary} />
+              <Text style={{fontSize: 15, fontFamily: "Inter_600SemiBold", color: colors.foreground}}>Edit Bantuan</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={{flexDirection: "row", alignItems: "center", paddingVertical: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: colors.border}}
+              onPress={() => {
+                 const id = selectedBantuan.id;
+                 setSelectedBantuan(null);
+                 setDialogContext({
+                    title: "Hapus Bantuan",
+                    message: "Apakah Anda yakin ingin menghapus bantuan ini?",
+                    isConfirm: true,
+                    onConfirm: async () => {
+                       await deleteBantuan(id);
+                       setDialogContext(null);
+                    }
+                 });
+              }}
+            >
+              <Trash2 size={20} color={colors.destructive} />
+              <Text style={{fontSize: 15, fontFamily: "Inter_600SemiBold", color: colors.destructive}}>Hapus Bantuan</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={{flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 16, marginTop: 12, backgroundColor: colors.secondary, borderRadius: 12}}
+              onPress={() => setSelectedBantuan(null)}
+            >
+              <Text style={{fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground}}>Batal</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
 
       {/* Global Dialog Overlay */}

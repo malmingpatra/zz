@@ -74,7 +74,7 @@ export default function DetailPesananScreen() {
       paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, overflow: "hidden",
     },
     scroll: { flex: 1 },
-    scrollContent: { padding: 12, gap: 10, paddingBottom: insets.bottom + 80 },
+    scrollContent: { padding: 12, gap: 10, paddingBottom: insets.bottom + 180 },
     card: {
       backgroundColor: colors.card, borderRadius: 14,
       borderWidth: 1, borderColor: colors.border, padding: 14,

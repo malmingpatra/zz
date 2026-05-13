@@ -465,8 +465,72 @@ export default function ProfilScreen() {
         ))}
       </View>
 
+      {tab === "pesanan" && (
+        <View style={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 0 }}>
+          <View style={[s.searchRow, { marginBottom: 8 }]}>
+            <View style={s.searchWrap}>
+              <Search size={18} color={colors.mutedForeground} />
+              <TextInput 
+                style={s.searchInput}
+                placeholder="Cari ID transaksi atau nama item..."
+                placeholderTextColor={colors.mutedForeground}
+                value={searchQuery}
+                onChangeText={(val) => {
+                  setSearchQuery(val);
+                  setCurrentPage(1);
+                }}
+              />
+            </View>
+            <TouchableOpacity 
+              style={[s.filterBtn, filterDate !== "" && { backgroundColor: "black" }]} 
+              activeOpacity={0.8}
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  setShowDatePicker(true);
+                } else {
+                  if (filterDate) {
+                    setFilterDate("");
+                    setCurrentPage(1);
+                  }
+                }
+              }}
+            >
+              {Platform.OS === 'web' ? (
+                <input 
+                  type="date"
+                  value={filterDate}
+                  onChange={(e: any) => {
+                    const val = e.target.value;
+                    setFilterDate(val);
+                    setCurrentPage(1);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    opacity: 0,
+                    width: '100%',
+                    height: '100%',
+                    cursor: 'pointer',
+                    top: 0, left: 0
+                  }}
+                />
+              ) : null}
+              <Filter size={20} color={filterDate ? "#FFF" : "#fff"} />
+            </TouchableOpacity>
+            {Platform.OS !== 'web' && filterDate !== "" && (
+              <TouchableOpacity 
+                 style={[s.filterBtn, { backgroundColor: colors.secondary, marginLeft: 8 }]}
+                activeOpacity={0.8}
+                onPress={() => { setFilterDate(""); setCurrentPage(1); }}
+              >
+                <X size={20} color={colors.foreground} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      )}
+
       {/* Pane */}
-      <ScrollView style={s.pane} contentContainerStyle={s.paneContent} showsVerticalScrollIndicator={false}>
+      <ScrollView style={s.pane} contentContainerStyle={[s.paneContent, tab === "pesanan" && { paddingTop: 4 }]} showsVerticalScrollIndicator={false}>
         {tab === "profil" && (
           <>
             <Text style={s.secLabel}>Informasi Pribadi</Text>
@@ -530,67 +594,6 @@ export default function ProfilScreen() {
 
         {tab === "pesanan" && (
           <>
-            <Text style={s.secLabel}>Riwayat Transaksi</Text>
-            <View style={s.searchRow}>
-              <View style={s.searchWrap}>
-                <Search size={18} color={colors.mutedForeground} />
-                <TextInput 
-                  style={s.searchInput}
-                  placeholder="Cari ID transaksi atau nama item..."
-                  placeholderTextColor={colors.mutedForeground}
-                  value={searchQuery}
-                  onChangeText={(val) => {
-                    setSearchQuery(val);
-                    setCurrentPage(1);
-                  }}
-                />
-              </View>
-              <TouchableOpacity 
-                style={[s.filterBtn, filterDate !== "" && { backgroundColor: "black" }]} 
-                activeOpacity={0.8}
-                onPress={() => {
-                  if (Platform.OS !== 'web') {
-                    setShowDatePicker(true);
-                  } else {
-                    if (filterDate) {
-                      setFilterDate("");
-                      setCurrentPage(1);
-                    }
-                  }
-                }}
-              >
-                {Platform.OS === 'web' ? (
-                  <input 
-                    type="date"
-                    value={filterDate}
-                    onChange={(e: any) => {
-                      const val = e.target.value;
-                      setFilterDate(val);
-                      setCurrentPage(1);
-                    }}
-                    style={{
-                      position: 'absolute',
-                      opacity: 0,
-                      width: '100%',
-                      height: '100%',
-                      cursor: 'pointer',
-                      top: 0, left: 0
-                    }}
-                  />
-                ) : null}
-                <Filter size={20} color={filterDate ? "#FFF" : "#fff"} />
-              </TouchableOpacity>
-              {Platform.OS !== 'web' && filterDate !== "" && (
-                <TouchableOpacity 
-                   style={[s.filterBtn, { backgroundColor: colors.secondary, marginLeft: 8 }]}
-                  activeOpacity={0.8}
-                  onPress={() => { setFilterDate(""); setCurrentPage(1); }}
-                >
-                  <X size={20} color={colors.foreground} />
-                </TouchableOpacity>
-              )}
-            </View>
-            
             {Platform.OS !== 'web' && showDatePicker && (
               <DateTimePicker
                 value={filterDate ? new Date(filterDate) : new Date()}

@@ -49,7 +49,7 @@ export default function CetakLaporan() {
       marginRight: 12 
     },
     headerTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground },
-    scrollContent: { padding: 16 },
+    scrollContent: { padding: 16, paddingBottom: insets.bottom + 100 },
     previewLabel: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10, paddingHorizontal: 2 },
     card: { backgroundColor: colors.card, borderRadius: 14, borderWidth: 1, borderColor: colors.border, padding: 20 },
     reportHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20, paddingBottom: 16, borderBottomWidth: 2, borderBottomColor: colors.primary },

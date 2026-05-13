@@ -43,6 +43,62 @@ export default function ResiScreen() {
   const { resi_id } = useLocalSearchParams<{ resi_id: string }>();
   const { orders, storeSettings } = useDatabase();
 
+  const s = StyleSheet.create({
+    container: { flex: 1, backgroundColor: "#F0F2EE" },
+    header: {
+      backgroundColor: "#fff",
+      paddingBottom: 14,
+      paddingHorizontal: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: "#ddd",
+    },
+    backBtn: {
+      width: 36, height: 36, borderRadius: 10,
+      backgroundColor: "#F5F5F5",
+      alignItems: "center", justifyContent: "center",
+    },
+    headerTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1A1A1A", flex: 1 },
+    scroll: { flex: 1 },
+    scrollContent: { padding: 12, paddingBottom: insets.bottom + 120 },
+    previewLabel: {
+      fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#aaa",
+      textTransform: "uppercase", letterSpacing: 1, marginBottom: 10, paddingHorizontal: 2,
+    },
+    resiCard: {
+      backgroundColor: "#fff",
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: "#ddd",
+      overflow: "hidden",
+    },
+    resiInner: { padding: 20 },
+    bottomActions: {
+      position: "absolute",
+      bottom: 0, left: 0, right: 0,
+      flexDirection: "row",
+      padding: 12,
+      gap: 8,
+      backgroundColor: "#F0F2EE",
+      borderTopWidth: 1,
+      borderTopColor: "#ddd",
+    },
+    cancelBtn: {
+      flex: 1, height: 46, backgroundColor: "#fff",
+      borderWidth: 1, borderColor: "#ddd", borderRadius: 12,
+      alignItems: "center", justifyContent: "center",
+    },
+    cancelBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#888" },
+    printBtn: {
+      flex: 1.6, height: 46, backgroundColor: "#1A6640",
+      borderRadius: 12, flexDirection: "row", alignItems: "center",
+      justifyContent: "center", gap: 7,
+    },
+    printBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" },
+  });
+
   const order = orders.find((o) => o.id === resi_id);
 
   if (!order) {
@@ -250,62 +306,6 @@ export default function ResiScreen() {
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F0F2EE" },
-  header: {
-    backgroundColor: "#fff",
-    paddingBottom: 14,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  backBtn: {
-    width: 36, height: 36, borderRadius: 10,
-    backgroundColor: "#F5F5F5",
-    alignItems: "center", justifyContent: "center",
-  },
-  headerTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1A1A1A", flex: 1 },
-  scroll: { flex: 1 },
-  scrollContent: { padding: 12, paddingBottom: 100 },
-  previewLabel: {
-    fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#aaa",
-    textTransform: "uppercase", letterSpacing: 1, marginBottom: 10, paddingHorizontal: 2,
-  },
-  resiCard: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    overflow: "hidden",
-  },
-  resiInner: { padding: 20 },
-  bottomActions: {
-    position: "absolute",
-    bottom: 0, left: 0, right: 0,
-    flexDirection: "row",
-    padding: 12,
-    gap: 8,
-    backgroundColor: "#F0F2EE",
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-  },
-  cancelBtn: {
-    flex: 1, height: 46, backgroundColor: "#fff",
-    borderWidth: 1, borderColor: "#ddd", borderRadius: 12,
-    alignItems: "center", justifyContent: "center",
-  },
-  cancelBtnText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#888" },
-  printBtn: {
-    flex: 1.6, height: 46, backgroundColor: "#1A6640",
-    borderRadius: 12, flexDirection: "row", alignItems: "center",
-    justifyContent: "center", gap: 7,
-  },
-  printBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#fff" },
-});
 
 const s_resi = StyleSheet.create({
   topRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 },

@@ -9,7 +9,7 @@ import {
   Platform,
   Alert
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "../_hooks/useColors";
 import { useDatabase } from "../_context/DatabaseContext";
@@ -34,9 +34,10 @@ const COLOR_PAIRS = [
 
 export default function TambahBantuan() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id?: string }>();
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { addBantuan } = useDatabase();
+  const { addBantuan, updateBantuan, bantuan } = useDatabase();
   const { dialogContext, setDialogContext } = useAutoCloseDialog();
   
   const s = StyleSheet.create({
@@ -114,11 +115,21 @@ export default function TambahBantuan() {
     btnAddText: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primaryForeground }
   });
 
-  const [nama, setNama] = useState("");
-  const [link, setLink] = useState("");
+  const existingBantuan = useMemo(() => {
+    return id ? bantuan.find(b => b.id === id) : null;
+  }, [id, bantuan]);
+
+  const [nama, setNama] = useState(existingBantuan?.name || "");
+  const [link, setLink] = useState(existingBantuan?.link || "");
   const [activeLib, setActiveLib] = useState<"lucide" | "fa">("lucide");
-  const [iconName, setIconName] = useState("HelpCircle");
-  const [selectedColor, setSelectedColor] = useState(COLOR_PAIRS[0]);
+  const [iconName, setIconName] = useState(existingBantuan?.icon || "HelpCircle");
+  
+  const initialColor = useMemo(() => {
+    if (!existingBantuan) return COLOR_PAIRS[0];
+    return COLOR_PAIRS.find(c => c.bg === existingBantuan.bg && c.ic === existingBantuan.color) || COLOR_PAIRS[0];
+  }, [existingBantuan]);
+  
+  const [selectedColor, setSelectedColor] = useState(initialColor);
 
   const IconPreview = useMemo(() => {
     if (activeLib === "lucide") {
@@ -135,21 +146,39 @@ export default function TambahBantuan() {
     if (!link.trim()) return setDialogContext({ title: "Error", message: "Link harus diisi" });
     if (!iconName.trim()) return setDialogContext({ title: "Error", message: "Nama ikon harus diisi" });
     
-    await addBantuan({
-      id: "bant-" + Date.now().toString(),
-      icon: iconName,
-      name: nama.trim(),
-      bg: selectedColor.bg,
-      color: selectedColor.ic,
-      link: link.trim(),
-    });
-    
-    setDialogContext({ 
-      title: "Berhasil", 
-      message: `"${nama}" telah ditambahkan ke pusat bantuan`,
-      onConfirm: () => router.back(),
-      onCancel: () => router.back()
-    });
+    if (existingBantuan) {
+      await updateBantuan({
+        ...existingBantuan,
+        icon: iconName,
+        name: nama.trim(),
+        bg: selectedColor.bg,
+        color: selectedColor.ic,
+        link: link.trim(),
+      });
+      
+      setDialogContext({ 
+        title: "Berhasil", 
+        message: `"${nama}" telah diperbarui`,
+        onConfirm: () => router.back(),
+        onCancel: () => router.back()
+      });
+    } else {
+      await addBantuan({
+        id: "bant-" + Date.now().toString(),
+        icon: iconName,
+        name: nama.trim(),
+        bg: selectedColor.bg,
+        color: selectedColor.ic,
+        link: link.trim(),
+      });
+      
+      setDialogContext({ 
+        title: "Berhasil", 
+        message: `"${nama}" telah ditambahkan ke pusat bantuan`,
+        onConfirm: () => router.back(),
+        onCancel: () => router.back()
+      });
+    }
   };
 
   return (
@@ -159,7 +188,7 @@ export default function TambahBantuan() {
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()} activeOpacity={0.8}>
           <ArrowLeft size={20} color="#444" />
         </TouchableOpacity>
-        <Text style={s.headerTitle}>Tambah Pusat Bantuan</Text>
+        <Text style={s.headerTitle}>{existingBantuan ? "Edit Pusat Bantuan" : "Tambah Pusat Bantuan"}</Text>
       </View>
 
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
@@ -272,8 +301,8 @@ export default function TambahBantuan() {
           <Text style={s.btnCancelText}>Batal</Text>
         </TouchableOpacity>
         <TouchableOpacity style={s.btnAdd} onPress={handleAdd} activeOpacity={0.8}>
-          <Plus size={18} color="#fff" />
-          <Text style={s.btnAddText}>Tambah</Text>
+          {!existingBantuan && <Plus size={18} color="#fff" />}
+          <Text style={s.btnAddText}>{existingBantuan ? "Simpan Perubahan" : "Tambah"}</Text>
         </TouchableOpacity>
       </View>
       <DialogOverlay context={dialogContext} onClose={() => setDialogContext(null)} />
