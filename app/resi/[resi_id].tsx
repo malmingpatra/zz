@@ -41,7 +41,7 @@ export default function ResiScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { resi_id } = useLocalSearchParams<{ resi_id: string }>();
-  const { orders, storeSettings } = useDatabase();
+  const { orders, storeSettings, members } = useDatabase();
 
   const s = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#F0F2EE" },
@@ -114,6 +114,11 @@ export default function ResiScreen() {
   const discountType = order.discountType || "pct";
   const discountValue = order.discountValue || 0;
   const total = order.total || 0;
+ 
+  // Sync with members DB if order fields are default/empty
+  const member = members.find(m => m.name === order.buyer);
+  const displayPhone = (order.phone && order.phone !== "-") ? order.phone : (member?.phone || "-");
+  const displayAddress = (order.address && order.address !== "-") ? order.address : (member?.address || "-");
 
   const diskon = discountAmount > 0 ? {
     label: `Diskon ${discountType === "pct" ? `${discountValue}%` : ""}`,
@@ -130,7 +135,7 @@ export default function ResiScreen() {
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <style>
             * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: monospace; padding: 20px; font-size: 12px; max-width: 300px; margin: 0 auto; color: #1a1a1a; }
+            body { font-family: monospace; padding: 20px; font-size: 12px; max-width: 380px; margin: 0 auto; color: #1a1a1a; }
             .center { text-align: center; }
             .bold { font-weight: bold; }
             .row { display: flex; justify-content: space-between; margin-bottom: 3px; }
@@ -160,14 +165,14 @@ export default function ResiScreen() {
           <div class="parties">
             <div class="party">
               <div class="label">Staf / Pengirim</div>
-              <div class="bold">${order.staff}</div>
+              <div class="bold">${order.staff || "-"}</div>
               <div style="font-size:11px">${storeSettings?.storeName || "Toko Anda"}</div>
             </div>
             <div class="party">
               <div class="label">Penerima</div>
-              <div class="bold">${order.buyer}</div>
-              <div style="font-size:11px">${order.phone}</div>
-              <div style="font-size:10px;color:#666">${order.address}</div>
+              <div class="bold">${order.buyer || "Pelanggan"}</div>
+              <div style="font-size:11px">${displayPhone}</div>
+              <div style="font-size:10px;color:#666">${displayAddress}</div>
             </div>
           </div>
           <div class="dashed"></div>
@@ -240,15 +245,15 @@ export default function ResiScreen() {
             <View style={s_resi.partiesRow}>
               <View style={s_resi.partyCol}>
                 <Text style={s_resi.partyLabel}>Staf / Pengirim</Text>
-                <Text style={s_resi.partyName}>{order.staff}</Text>
+                <Text style={s_resi.partyName}>{order.staff || "-"}</Text>
                 <Text style={s_resi.partyPhone}>{storeSettings?.storeName || "Toko Anda"}</Text>
               </View>
               <View style={s_resi.sep} />
               <View style={s_resi.partyCol}>
                 <Text style={s_resi.partyLabel}>Penerima</Text>
-                <Text style={s_resi.partyName}>{order.buyer}</Text>
-                <Text style={s_resi.partyPhone}>{order.phone}</Text>
-                <Text style={s_resi.partyAddr}>{order.address}</Text>
+                <Text style={s_resi.partyName}>{order.buyer || "Pelanggan"}</Text>
+                <Text style={s_resi.partyPhone}>{displayPhone}</Text>
+                <Text style={s_resi.partyAddr}>{displayAddress}</Text>
               </View>
             </View>
 

@@ -141,20 +141,26 @@ export default function DetailPesananScreen() {
 
   const router = useRouter();
   const { pesanan_id } = useLocalSearchParams<{ pesanan_id: string }>();
-  const { orders, userProfile, updateOrderStatus } = useDatabase();
+  const { orders, userProfile, updateOrderStatus, members } = useDatabase();
   const [loading, setLoading] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showUndoSendConfirm, setShowUndoSendConfirm] = useState(false);
   const currentUserName = userProfile?.displayName || "Staf";
 
   const order = orders.find((o) => o.id === pesanan_id);
+  const canManage = !order?.staff || order?.staff === currentUserName;
+
+  // Sync with members DB if order fields are default/empty
+  const member = members.find(m => m.name === order?.buyer);
+  const displayPhone = (order?.phone && order.phone !== "-") ? order.phone : (member?.phone || "-");
+  const displayAddress = (order?.address && order.address !== "-") ? order.address : (member?.area || member?.address || "-");
 
   const updateStatus = async (newStatus: "menunggu" | "dikirim" | "selesai" | "dibatalkan") => {
     if (!order) return;
     setLoading(true);
     try {
       let staffUpdate: string | undefined = undefined;
-      if (newStatus === "dikirim") {
+      if (newStatus === "dikirim" || newStatus === "selesai") {
         staffUpdate = currentUserName;
       } else if (newStatus === "menunggu" || newStatus === "dibatalkan") {
         staffUpdate = "";
@@ -212,7 +218,7 @@ export default function DetailPesananScreen() {
             <View style={s.infoIcon}><UserCheck size={14} color="#888" /></View>
             <View>
               <Text style={s.infoKey}>Staf</Text>
-              <Text style={s.infoValue}>{order.staff}</Text>
+              <Text style={s.infoValue}>{order.staff || "-"}</Text>
             </View>
           </View>
         </View>
@@ -231,14 +237,14 @@ export default function DetailPesananScreen() {
             <View style={s.infoIcon}><Phone size={14} color="#888" /></View>
             <View style={{ flex: 1 }}>
               <Text style={s.infoKey}>No. HP</Text>
-              <Text style={s.infoValue}>{order.phone}</Text>
+              <Text style={s.infoValue}>{displayPhone}</Text>
             </View>
           </View>
           <View style={[s.infoRow, s.infoRowLast]}>
             <View style={s.infoIcon}><MapPin size={14} color="#888" /></View>
             <View style={{ flex: 1 }}>
               <Text style={s.infoKey}>Alamat</Text>
-              <Text style={s.infoValue}>{order.address}</Text>
+              <Text style={s.infoValue}>{displayAddress}</Text>
             </View>
           </View>
         </View>
@@ -315,31 +321,48 @@ export default function DetailPesananScreen() {
 
         {order.status === "dikirim" && (
           <>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <TouchableOpacity
-                style={[s.outlineBtn, { flex: 1, borderColor: "#FCEBEB", backgroundColor: "#FCEBEB" }]}
-                activeOpacity={0.8}
-                onPress={() => setShowUndoSendConfirm(true)}
-                disabled={loading}
-              >
-                <XCircle size={18} color="#791F1F" />
-                <Text style={[s.outlineBtnText, { color: "#791F1F" }]}>Batal Kirim</Text>
-              </TouchableOpacity>
+            {!canManage ? (
+              <View style={{ 
+                backgroundColor: colors.secondary, 
+                padding: 12, 
+                borderRadius: 12, 
+                flexDirection: 'row', 
+                alignItems: 'center', 
+                gap: 8,
+                marginBottom: 4
+              }}>
+                <UserCheck size={16} color={colors.mutedForeground} />
+                <Text style={{ fontSize: 12, color: colors.mutedForeground, fontFamily: 'Inter_500Medium', flex: 1 }}>
+                  Sedang ditangani oleh <Text style={{ fontFamily: 'Inter_700Bold', color: colors.foreground }}>{order.staff}</Text>
+                </Text>
+              </View>
+            ) : (
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity
+                  style={[s.outlineBtn, { flex: 1, borderColor: "#FCEBEB", backgroundColor: "#FCEBEB" }]}
+                  activeOpacity={0.8}
+                  onPress={() => setShowUndoSendConfirm(true)}
+                  disabled={loading}
+                >
+                  <XCircle size={18} color="#791F1F" />
+                  <Text style={[s.outlineBtnText, { color: "#791F1F" }]}>Batal Kirim</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[s.primaryBtn, { flex: 1.2 }]}
-                activeOpacity={0.85}
-                onPress={() => updateStatus("selesai")}
-                disabled={loading}
-              >
-                {loading ? <ActivityIndicator color="#fff" /> : (
-                  <>
-                    <CheckCircle size={18} color="#fff" />
-                    <Text style={s.primaryBtnText}>Terkirim</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity
+                  style={[s.primaryBtn, { flex: 1.2 }]}
+                  activeOpacity={0.85}
+                  onPress={() => updateStatus("selesai")}
+                  disabled={loading}
+                >
+                  {loading ? <ActivityIndicator color="#fff" /> : (
+                    <>
+                      <CheckCircle size={18} color="#fff" />
+                      <Text style={s.primaryBtnText}>Terkirim</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
 
             <TouchableOpacity
               style={s.outlineBtn}

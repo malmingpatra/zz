@@ -805,9 +805,28 @@ export default function ProfilScreen() {
                   ))}
 
                   <Text style={[s.detailLabel, { marginTop: 16 }]}>Total Bayar</Text>
-                  <Text style={[s.detailValue, { fontSize: 16, color: colors.primary, fontFamily: "Inter_700Bold" }]}>
-                    {fmt(selectedOrder.total)}
-                  </Text>
+                  <View style={{ marginTop: 2, gap: 6 }}>
+                    {selectedOrder.subtotal !== undefined && selectedOrder.subtotal !== selectedOrder.total && (
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={{ fontSize: 13, color: '#888', fontFamily: 'Inter_400Regular' }}>Subtotal</Text>
+                        <Text style={{ fontSize: 13, color: '#888', fontFamily: 'Inter_500Medium' }}>{fmt(selectedOrder.subtotal)}</Text>
+                      </View>
+                    )}
+                    {selectedOrder.discountAmount !== undefined && selectedOrder.discountAmount > 0 && (
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={{ fontSize: 13, color: '#E44E4E', fontFamily: 'Inter_400Regular' }}>
+                          Diskon {selectedOrder.discountType === 'pct' ? `(${selectedOrder.discountValue}%)` : ''}
+                        </Text>
+                        <Text style={{ fontSize: 13, color: '#E44E4E', fontFamily: 'Inter_500Medium' }}>- {fmt(selectedOrder.discountAmount)}</Text>
+                      </View>
+                    )}
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 13, color: colors.foreground, fontFamily: 'Inter_600SemiBold' }}>Total</Text>
+                      <Text style={[s.detailValue, { fontSize: 16, color: colors.primary, fontFamily: "Inter_700Bold", marginTop: 0 }]}>
+                        {fmt(selectedOrder.total)}
+                      </Text>
+                    </View>
+                  </View>
                 </>
               )}
             </ScrollView>
@@ -824,12 +843,24 @@ export default function ProfilScreen() {
                     </TouchableOpacity>
                   )}
 
-                  <TouchableOpacity 
-                    style={[s.primaryBtn, { backgroundColor: "#888", marginTop: 5 }]} 
-                    onPress={() => setSelectedOrder(null)}
-                  >
-                    <Text style={s.primaryBtnText}>Tutup</Text>
-                  </TouchableOpacity>
+                  <View style={{ flexDirection: 'row', gap: 10, marginTop: 5 }}>
+                    <TouchableOpacity 
+                      style={[s.primaryBtn, { flex: 1, backgroundColor: colors.primary }]} 
+                      onPress={() => {
+                        setSelectedOrder(null);
+                        router.push({ pathname: "/nota", params: { orderId: selectedOrder.id } });
+                      }}
+                    >
+                      <Printer size={18} color={colors.primaryForeground} />
+                      <Text style={s.primaryBtnText}>Cetak Nota</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={[s.primaryBtn, { flex: 1, backgroundColor: "#888" }]} 
+                      onPress={() => setSelectedOrder(null)}
+                    >
+                      <Text style={s.primaryBtnText}>Tutup</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
             </View>

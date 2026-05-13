@@ -253,46 +253,48 @@ export default function CetakLaporan() {
           ${reportData.products.map(p => `
             <tr>
               <td>${p.name}</td>
-              <td style="text-align:center">${p.qty} pcs</td>
+              <td style="text-align:center">${p.qty}</td>
               <td style="text-align:right; font-weight:600;">${fmt(p.qty * p.price)}</td>
             </tr>
           `).join('')}
         </tbody>
       </table>
 
-      <div class="lap-totals">
-        <div class="lap-total-box gross">
-          <div class="lap-total-label" style="color:#27500a">Pendapatan Kotor</div>
-          <div class="lap-total-value" style="color:#1a6640">${fmt(grossTotal)}</div>
-        </div>
-        <div class="lap-total-box disc">
-          <div class="lap-total-label" style="color:#854f0b">Total Diskon</div>
-          <div class="lap-total-value" style="color:#854f0b">-${fmt(totalDiskon)}</div>
-        </div>
-        <div class="lap-total-box net">
-          <div class="lap-total-label" style="color:rgba(255,255,255,0.8)">Pendapatan</div>
-          <div class="lap-total-value">${fmt(pendapatan)}</div>
-        </div>
+      <div style="display:flex; justify-content:space-between; margin-top:10px; font-weight:700; font-size:13px; color:#1a6640; border-top:1px solid #eee; padding-top:10px;">
+        <span>Total Pendapatan Kotor</span>
+        <span>${fmt(grossTotal)}</span>
       </div>
 
       <div class="lap-section-title">Rincian Diskon</div>
       <table class="lap-table">
         <thead>
-          <tr><th>ID Pesanan</th><th style="text-align:center">Keterangan</th><th style="text-align:right">Potongan</th></tr>
+          <tr><th>ID Pesanan</th><th style="text-align:right">Potongan</th></tr>
         </thead>
         <tbody>
           ${reportData.discounts.map(d => `
             <tr>
               <td style="font-family:monospace;font-size:11px">${d.id}</td>
-              <td style="text-align:center"><span class="disc-badge">${d.type === 'persen' ? d.persen + '%' : 'Nominal'}</span> ${d.label}</td>
-              <td style="text-align:right; color:#854f0b; font-weight:600;">-${fmt(d.amount)}</td>
+              <td style="text-align:right; color:#854f0b; font-weight:600;">
+                ${d.type === 'persen' ? `(${d.persen}%) ` : ''}${fmt(d.amount)}
+              </td>
             </tr>
           `).join('')}
         </tbody>
       </table>
 
+      <div style="margin-top:15px; border-top:2px solid #eee; padding-top:10px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:12px; font-weight:600; color:#854f0b;">
+            <span>Total Diskon</span>
+            <span>-${fmt(totalDiskon)}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:15px; font-weight:800; color:#1a6640; margin-top:5px; border-top:1px dashed #ccc; padding-top:8px;">
+            <span>Total Pendapatan</span>
+            <span>${fmt(pendapatan)}</span>
+        </div>
+      </div>
+
       <div class="lap-footer">
-        <div class="lap-footer-note">Laporan ini dibuat secara otomatis oleh sistem.<br/>Dokumen ini sah tanpa tanda tangan.</div>
+        <div class="lap-footer-note"></div>
         <div class="lap-signature">
           <div class="lap-signature-label">Mengetahui,</div>
           <div class="lap-signature-name">${reportData.userName}</div>
@@ -356,24 +358,14 @@ export default function CetakLaporan() {
           {reportData.products.map((p, idx) => (
             <View key={idx} style={styles.productRow}>
               <Text style={styles.productName}>{p.name}</Text>
-              <Text style={styles.productQty}>{p.qty} pcs</Text>
+              <Text style={styles.productQty}>{p.qty}</Text>
               <Text style={styles.productSub}>{fmt(p.qty * p.price)}</Text>
             </View>
           ))}
 
-          <View style={styles.totalsContainer}>
-            <View style={[styles.totalBox, { backgroundColor: "#EAF3DE" }]}>
-              <Text style={[styles.totalLabel, { color: "#27500A" }]}>Gross</Text>
-              <Text style={[styles.totalValue, { color: "#1A6640" }]}>{fmt(grossTotal)}</Text>
-            </View>
-            <View style={[styles.totalBox, { backgroundColor: "#FAEEDA" }]}>
-              <Text style={[styles.totalLabel, { color: "#854F0B" }]}>Diskon</Text>
-              <Text style={[styles.totalValue, { color: "#854F0B" }]}>-{fmt(totalDiskon)}</Text>
-            </View>
-            <View style={[styles.totalBox, { backgroundColor: "#1A6640" }]}>
-              <Text style={[styles.totalLabel, { color: "rgba(255,255,255,0.8)" }]}>Pendapatan</Text>
-              <Text style={[styles.totalValue, { color: "#fff" }]}>{fmt(pendapatan)}</Text>
-            </View>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 12, borderTopWidth: 0.5, borderTopColor: colors.border, paddingTop: 10 }}>
+            <Text style={{ fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primary }}>Total Pendapatan Kotor</Text>
+            <Text style={{ fontSize: 13, fontFamily: "Inter_800ExtraBold", color: colors.primary }}>{fmt(grossTotal)}</Text>
           </View>
 
           <View style={styles.sectionDivider}>
@@ -384,17 +376,26 @@ export default function CetakLaporan() {
             <View key={idx} style={styles.discountRow}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.discountId}>{d.id}</Text>
-                <View style={styles.discountBadgeRow}>
-                  <View style={styles.badge}><Text style={styles.badgeText}>{d.type === 'persen' ? d.persen + '%' : 'Nominal'}</Text></View>
-                  <Text style={styles.discountText}>{d.label}</Text>
-                </View>
               </View>
-              <Text style={[styles.productSub, { color: "#854F0B" }]}>-{fmt(d.amount)}</Text>
+              <Text style={[styles.productSub, { color: colors.stokWarnText }]}>
+                {d.type === 'persen' ? `(${d.persen}%) ` : ''}{fmt(d.amount)}
+              </Text>
             </View>
           ))}
 
+          <View style={{ marginTop: 15, borderTopWidth: 2, borderTopColor: colors.border, paddingTop: 10 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+              <Text style={{ fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.stokWarnText }}>Total Diskon</Text>
+              <Text style={{ fontSize: 12, fontFamily: "Inter_700Bold", color: colors.stokWarnText }}>-{fmt(totalDiskon)}</Text>
+            </View>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6, borderTopWidth: 1, borderTopColor: colors.border, borderStyle: "dashed", paddingTop: 8 }}>
+              <Text style={{ fontSize: 15, fontFamily: "Inter_700Bold", color: colors.primary }}>Total Pendapatan</Text>
+              <Text style={{ fontSize: 15, fontFamily: "Inter_800ExtraBold", color: colors.primary }}>{fmt(pendapatan)}</Text>
+            </View>
+          </View>
+
           <View style={styles.footer}>
-            <Text style={styles.footerNote}>Laporan ini dibuat otomatis oleh sistem.</Text>
+            <Text style={styles.footerNote}></Text>
             <View style={styles.signature}>
               <Text style={styles.signatureLabel}>Mengetahui,</Text>
               <View style={styles.signatureLine} />
