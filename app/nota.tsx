@@ -300,3 +300,4 @@ export default function NotaScreen() {
     </View>
   );
 }
+// sync-trigger

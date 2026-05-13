@@ -430,3 +430,4 @@ export default function EditMassalScreen() {
     </View>
   );
 }
+// sync-trigger

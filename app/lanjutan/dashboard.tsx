@@ -2028,4 +2028,5 @@ export default function KasirScreen() {
     </View>
   );
 }
+// sync-trigger
 
