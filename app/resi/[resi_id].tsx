@@ -64,62 +64,96 @@ export default function ResiScreen() {
     amount: discountAmount
   } : null;
 
-function handlePrint() {
-  if (Platform.OS === 'web') {
-    const printContent = `
-      <div style="font-family:monospace;padding:20px;font-size:12px;max-width:300px;margin:0 auto">
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-          <div>
-            <div style="font-weight:bold">${storeSettings?.storeName || "NAMA TOKO"}</div>
-            <div style="font-size:10px;color:#888">${storeSettings?.storeAddress || "ALAMAT TOKO"}</div>
+  function handlePrint() {
+    if (Platform.OS === "web") {
+      const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: monospace; padding: 20px; font-size: 12px; max-width: 300px; margin: 0 auto; color: #1a1a1a; }
+            .center { text-align: center; }
+            .bold { font-weight: bold; }
+            .row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+            .dashed { border-top: 1px dashed #000; margin: 8px 0; }
+            .solid { border-top: 2px solid #000; margin: 8px 0; }
+            .red { color: red; }
+            .label { font-size: 9px; color: #aaa; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
+            .parties { display: flex; gap: 20px; margin: 8px 0; }
+            .party { flex: 1; }
+            .badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; background: #faeeda; color: #854f0b; display: inline-block; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+            <div>
+              <div class="bold" style="font-size:14px">${storeSettings?.storeName || "NAMA TOKO"}</div>
+              <div style="font-size:10px;color:#888">${storeSettings?.storeAddress || "ALAMAT TOKO"}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="label">No. Resi</div>
+              <div class="bold" style="color:#1A6640">${order.id}</div>
+              <div style="font-size:10px">${order.date}</div>
+            </div>
           </div>
-          <div style="text-align:right">
-            <div style="font-size:9px;color:#aaa">NO. RESI</div>
-            <div style="font-weight:bold;color:#1A6640">${order.id}</div>
-            <div style="font-size:10px">${order.date}</div>
+          <div class="solid"></div>
+          <div class="parties">
+            <div class="party">
+              <div class="label">Staf / Pengirim</div>
+              <div class="bold">${order.staff}</div>
+              <div style="font-size:11px">${storeSettings?.storeName || "Toko Anda"}</div>
+            </div>
+            <div class="party">
+              <div class="label">Penerima</div>
+              <div class="bold">${order.buyer}</div>
+              <div style="font-size:11px">${order.phone}</div>
+              <div style="font-size:10px;color:#666">${order.address}</div>
+            </div>
           </div>
-        </div>
-        <div style="border-top:2px solid #000;margin:8px 0"></div>
-        <div style="display:flex;gap:20px;margin:8px 0">
-          <div style="flex:1">
-            <div style="font-size:9px;color:#aaa">STAF / PENGIRIM</div>
-            <div style="font-weight:bold">${order.staff}</div>
-            <div style="font-size:11px">${storeSettings?.storeName || "Toko Anda"}</div>
+          <div class="dashed"></div>
+          ${(order.items || []).map((item: any) => `
+            <div class="bold">${item.name}</div>
+            <div class="row">
+              <span>${item.qty} x ${fmt(item.price)}</span>
+              <span>${fmt(item.qty * item.price)}</span>
+            </div>
+          `).join("")}
+          <div class="dashed"></div>
+          <div class="row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
+          ${diskon ? `
+            <div class="row red">
+              <span>${diskon.label}</span>
+              <span>-${fmt(diskon.amount)}</span>
+            </div>
+          ` : ""}
+          <div class="row bold" style="font-size:13px;margin-top:4px">
+            <span>TOTAL</span>
+            <span>${fmt(total)}</span>
           </div>
-          <div style="flex:1">
-            <div style="font-size:9px;color:#aaa">PENERIMA</div>
-            <div style="font-weight:bold">${order.buyer}</div>
-            <div style="font-size:11px">${order.phone}</div>
-            <div style="font-size:10px">${order.address}</div>
+          <div class="dashed"></div>
+          <div class="center" style="margin-top:4px;font-size:10px;color:#888">
+            Simpan resi ini sebagai bukti pengiriman.<br/>
+            Hubungi kami jika ada pertanyaan.
           </div>
-        </div>
-        <div style="border-top:1px dashed #000;margin:8px 0"></div>
-        ${(order.items || []).map((item: any) => `
-          <div style="font-weight:bold">${item.name}</div>
-          <div style="display:flex;justify-content:space-between">
-            <span>${item.qty} x ${fmt(item.price)}</span>
-            <span>${fmt(item.qty * item.price)}</span>
-          </div>
-        `).join('')}
-        <div style="border-top:1px dashed #000;margin:8px 0"></div>
-        <div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
-        ${diskon ? `<div style="display:flex;justify-content:space-between;color:red"><span>${diskon.label}</span><span>-${fmt(diskon.amount)}</span></div>` : ''}
-        <div style="display:flex;justify-content:space-between;font-weight:bold"><span>TOTAL</span><span>${fmt(total)}</span></div>
-        <div style="border-top:1px dashed #000;margin:8px 0"></div>
-        <div style="text-align:center;font-size:10px">Simpan resi ini sebagai bukti pengiriman.</div>
-        <div style="text-align:center;font-size:10px">Hubungi kami jika ada pertanyaan.</div>
-      </div>
-    `;
+        </body>
+        </html>
+      `;
 
-    const originalBody = document.body.innerHTML;
-    document.body.innerHTML = printContent;
-    window.print();
-    document.body.innerHTML = originalBody;
-    window.location.reload();
-  } else {
-    Alert.alert("Cetak Resi", "Resi/Label pengiriman sedang dicetak...");
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        setTimeout(() => printWindow.print(), 500);
+      }
+    } else {
+      Alert.alert("Cetak Resi", "Resi/Label pengiriman sedang dicetak...");
+    }
   }
-}
+
   return (
     <View style={s.container}>
       <View nativeID="resi-header" style={[s.header, { paddingTop: insets.top + 10 }]}>
