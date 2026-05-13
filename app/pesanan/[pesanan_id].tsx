@@ -153,7 +153,7 @@ export default function DetailPesananScreen() {
   // Sync with members DB if order fields are default/empty
   const member = members.find(m => m.name === order?.buyer);
   const displayPhone = (order?.phone && order.phone !== "-") ? order.phone : (member?.phone || "-");
-  const displayAddress = (order?.address && order.address !== "-") ? order.address : (member?.area || member?.address || "-");
+  const displayAddress = (order?.address && order.address !== "-") ? order.address : (member?.address || "-");
 
   const updateStatus = async (newStatus: "menunggu" | "dikirim" | "selesai" | "dibatalkan") => {
     if (!order) return;
