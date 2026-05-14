@@ -48,10 +48,11 @@ import {
 import NetInfo from "@react-native-community/netinfo";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useColors } from "../_hooks/useColors";
-import { useDatabase } from "../_context/DatabaseContext";
+import { useDatabase, Bantuan } from "../_context/DatabaseContext";
 import { auth, db } from "../_context/firebase-setup";
 import { writeBatch, doc, serverTimestamp } from "firebase/firestore";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { FontAwesome } from "@expo/vector-icons";
 
 type Tab = "pesanan" | "produk" | "statistik" | "admin";
 
@@ -185,6 +186,9 @@ export default function KasirScreen() {
   const [memberPage, setMemberPage] = useState(1);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
+  
+  const [infoTokoOpen, setInfoTokoOpen] = useState(false);
+  const [pusatBantuanOpen, setPusatBantuanOpen] = useState(false);
   const dropdownRef = React.useRef<View>(null);
 
   const toggleDropdown = () => {
@@ -513,7 +517,8 @@ export default function KasirScreen() {
     searchInput: {
       flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: colors.foreground,
       padding: 0,
-      ...(Platform.OS === "web" ? ({ outlineWidth: 0 } as object) : {}),
+      backgroundColor: 'transparent',
+      ...(Platform.OS === "web" ? ({ outlineWidth: 0, outlineColor: 'transparent' } as object) : {}),
     },
     catsRow: { flexDirection: "row", gap: 7, paddingBottom: 10, paddingTop: 2 },
     catChip: {
@@ -594,20 +599,21 @@ export default function KasirScreen() {
       borderWidth: 1, borderColor: colors.border,
       padding: 12, marginBottom: 8,
     },
-    memberAvatar: {
-      width: 38, height: 38, borderRadius: 10,
-      backgroundColor: colors.secondary,
-      alignItems: "center", justifyContent: "center",
-    },
-    memberInitials: { fontSize: 14, fontFamily: "Inter_700Bold", color: colors.primary },
     memberName: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 2 },
     memberSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
-    memberStatus: {
-      fontSize: 11, fontFamily: "Inter_600SemiBold",
-      paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20, overflow: "hidden",
+    bantHdr: { 
+      flexDirection: "row", 
+      justifyContent: "space-between", 
+      alignItems: "center", 
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: 10,
     },
-    bantHdr: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-    bantTitle: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground },
+    bantTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: colors.foreground },
     addBtn: {
       flexDirection: "row", alignItems: "center", gap: 5,
       backgroundColor: colors.primary, borderRadius: 8,
@@ -963,7 +969,7 @@ export default function KasirScreen() {
               <View style={[s.searchBar, { flex: 1 }]}>
                 <Search size={15} color="#aaa" />
                 <TextInput
-                  style={s.searchInput}
+                  style={[s.searchInput, Platform.OS === "web" ? { outlineWidth: 0, outlineColor: 'transparent' } : {}]}
                   value={orderSearch}
                   onChangeText={(t) => { setOrderSearch(t); setOrderPage(1); }}
                   placeholder="Cari pesanan..."
@@ -1005,11 +1011,12 @@ export default function KasirScreen() {
                   <View style={[s.searchBar, { flex: 1, height: 44, backgroundColor: colors.secondary, borderColor: "transparent", marginBottom: 0 }]}>
                     <Search size={14} color={colors.mutedForeground} />
                     <TextInput 
-                      style={[s.searchInput, { fontSize: 12 }]} 
+                      style={[s.searchInput, { fontSize: 12 }, Platform.OS === "web" ? { outlineWidth: 0, outlineColor: 'transparent' } : {}]} 
                       placeholder="Cari area..." 
                       placeholderTextColor={colors.mutedForeground}
                       value={orderAreaSearch} 
                       onChangeText={(t) => { setOrderAreaSearch(t); setOrderAreaPage(1); }} 
+                      underlineColorAndroid="transparent"
                     />
                   </View>
                   
@@ -1255,7 +1262,7 @@ export default function KasirScreen() {
               <View style={[s.searchBar, { flex: 1 }]}>
                 <Search size={15} color="#aaa" />
                 <TextInput
-                  style={s.searchInput}
+                  style={[s.searchInput, Platform.OS === "web" ? { outlineWidth: 0, outlineColor: 'transparent' } : {}]}
                   value={productSearch}
                   onChangeText={(t) => { setProductSearch(t); setProductPage(1); }}
                   placeholder="Cari produk..."
@@ -1279,11 +1286,12 @@ export default function KasirScreen() {
                   <View style={[s.searchBar, { flex: 1, height: 44, backgroundColor: colors.secondary, borderColor: "transparent", marginBottom: 0 }]}>
                     <Search size={14} color={colors.mutedForeground} />
                     <TextInput 
-                      style={[s.searchInput, { fontSize: 12 }]} 
+                      style={[s.searchInput, { fontSize: 12 }, Platform.OS === "web" ? { outlineWidth: 0, outlineColor: 'transparent' } : {}]} 
                       placeholder="Cari kategori..." 
                       placeholderTextColor={colors.mutedForeground}
                       value={productCatSearch} 
                       onChangeText={(t) => { setProductCatSearch(t); setProductCatFilterPage(1); }} 
+                      underlineColorAndroid="transparent"
                     />
                   </View>
                   <TouchableOpacity
@@ -1477,6 +1485,7 @@ export default function KasirScreen() {
                     backgroundColor: colors.secondary, padding: 12, borderRadius: 8, marginBottom: 15,
                     borderWidth: 1, borderColor: colors.border,
                     color: colors.foreground, fontFamily: 'Inter_400Regular', fontSize: 14,
+                    ...(Platform.OS === "web" ? ({ outlineWidth: 0, outlineColor: 'transparent' } as object) : {}),
                   }}
                   placeholder="Ketik kategori baru"
                   placeholderTextColor={colors.mutedForeground}
@@ -1788,14 +1797,21 @@ export default function KasirScreen() {
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={s.sectionPad}>
             {/* Members */}
-            <View style={[s.bantHdr, { marginBottom: 12 }]}>
-              <Text style={s.bantTitle}>Daftar Member</Text>
-              <TouchableOpacity onPress={() => setShowAdminMembersList(!showAdminMembersList)} activeOpacity={0.7}>
-                <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: colors.primary }}>
-                  {showAdminMembersList ? 'Sembunyikan' : 'Tampilkan'}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity 
+              style={s.bantHdr}
+              activeOpacity={0.7}
+              onPress={() => setShowAdminMembersList(!showAdminMembersList)}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Users size={18} color={colors.primary} />
+                <Text style={s.bantTitle}>Daftar Member</Text>
+              </View>
+              <ChevronDown 
+                size={20} 
+                color={colors.mutedForeground} 
+                style={{ transform: [{ rotate: showAdminMembersList ? '180deg' : '0deg' }] }} 
+              />
+            </TouchableOpacity>
             
             {showAdminMembersList && (
               <>
@@ -1803,7 +1819,7 @@ export default function KasirScreen() {
                   <View style={[s.searchBar, { flex: 1 }]}>
                     <Search size={15} color="#aaa" />
                     <TextInput
-                      style={s.searchInput}
+                      style={[s.searchInput, Platform.OS === "web" ? { outlineWidth: 0, outlineColor: 'transparent' } : {}]}
                       value={memberSearch}
                       onChangeText={(t) => { setMemberSearch(t); setMemberPage(1); }}
                       placeholder="Cari member..."
@@ -1848,11 +1864,12 @@ export default function KasirScreen() {
                       <View style={[s.searchBar, { height: 44, backgroundColor: colors.secondary, borderColor: "transparent", marginBottom: 12 }]}>
                         <Search size={14} color={colors.mutedForeground} />
                         <TextInput 
-                          style={[s.searchInput, { fontSize: 12 }]} 
+                          style={[s.searchInput, { fontSize: 12 }, Platform.OS === "web" ? { outlineWidth: 0, outlineColor: 'transparent' } : {}]} 
                           placeholder="Cari area..." 
                           placeholderTextColor={colors.mutedForeground}
                           value={memberAreaSearch} 
                           onChangeText={(t) => { setMemberAreaSearch(t); setMemberAreaPage(1); }} 
+                          underlineColorAndroid="transparent"
                         />
                       </View>
 
@@ -1908,9 +1925,6 @@ export default function KasirScreen() {
                         onPress={() => router.push({ pathname: "/detail-riwayat-pesanan", params: { member_id: m.id } })}
                         activeOpacity={0.75}
                       >
-                        <View style={s.memberAvatar}>
-                          <Text style={s.memberInitials}>{m.initials || m.name?.charAt(0) || "?"}</Text>
-                        </View>
                         <View style={{ flex: 1 }}>
                           <Text style={s.memberName}>{m.name || "Unknown Member"}</Text>
                           <Text style={s.memberSub}>{m.sub || "Member"}</Text>
@@ -1946,14 +1960,33 @@ export default function KasirScreen() {
             )}
 
             {/* Informasi Toko */}
-            <View style={[s.bantHdr, { marginBottom: 12 }]}>
-              <Text style={s.bantTitle}>Informasi Toko</Text>
-            </View>
-            <View style={{ backgroundColor: colors.card, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: colors.border, marginBottom: 24 }}>
-              <View style={{ marginBottom: 12 }}>
+            <TouchableOpacity 
+              style={[s.bantHdr, { marginTop: 10 }]}
+              activeOpacity={0.7}
+              onPress={() => setInfoTokoOpen(!infoTokoOpen)}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Settings size={18} color={colors.primary} />
+                <Text style={s.bantTitle}>Informasi Toko</Text>
+              </View>
+              <ChevronDown size={20} color={colors.mutedForeground} style={{ transform: [{ rotate: infoTokoOpen ? '180deg' : '0deg' }] }} />
+            </TouchableOpacity>
+            
+            {infoTokoOpen && (
+              <View style={{ backgroundColor: colors.card, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: colors.border, marginBottom: 24 }}>
+                <View style={{ marginBottom: 12 }}>
                 <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 6 }}>Nama Toko</Text>
                 <TextInput
-                  style={{ backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 8, fontSize: 14, fontFamily: "Inter_400Regular", color: colors.foreground }}
+                  style={{ 
+                    backgroundColor: colors.secondary, 
+                    paddingHorizontal: 12, 
+                    paddingVertical: 10, 
+                    borderRadius: 8, 
+                    fontSize: 14, 
+                    fontFamily: "Inter_400Regular", 
+                    color: colors.foreground,
+                    ...(Platform.OS === "web" ? ({ outlineWidth: 0, outlineColor: 'transparent' } as object) : {}),
+                  }}
                   value={namaToko}
                   onChangeText={setNamaToko}
                   placeholder="Ketik nama toko Anda"
@@ -1964,7 +1997,16 @@ export default function KasirScreen() {
               <View style={{ marginBottom: 16 }}>
                 <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 6 }}>Alamat Toko</Text>
                 <TextInput
-                  style={{ backgroundColor: colors.secondary, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 8, fontSize: 14, fontFamily: "Inter_400Regular", color: colors.foreground }}
+                  style={{ 
+                    backgroundColor: colors.secondary, 
+                    paddingHorizontal: 12, 
+                    paddingVertical: 10, 
+                    borderRadius: 8, 
+                    fontSize: 14, 
+                    fontFamily: "Inter_400Regular", 
+                    color: colors.foreground,
+                    ...(Platform.OS === "web" ? ({ outlineWidth: 0, outlineColor: 'transparent' } as object) : {}),
+                  }}
                   value={alamatToko}
                   onChangeText={setAlamatToko}
                   placeholder="Ketik alamat toko Anda"
@@ -1983,33 +2025,59 @@ export default function KasirScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
+            )}
 
             {/* Bantuan */}
-            <View style={[s.bantHdr, { marginTop: 16 }]}>
-              <Text style={s.bantTitle}>Pusat Bantuan</Text>
-              <TouchableOpacity 
-                style={s.addBtn} 
-                activeOpacity={0.8}
-                onPress={() => router.push("/lanjutan/tambah-bantuan")}
-              >
-                <Plus size={13} color="#fff" />
-                <Text style={s.addBtnText}>Tambah</Text>
-              </TouchableOpacity>
-            </View>
-            {bantuan.map((b) => (
-              <TouchableOpacity key={b.name} style={s.bantCard} activeOpacity={0.7} onPress={() => setSelectedBantuan(b)}>
-                <View style={[s.bantIconBox, { backgroundColor: b.bg }]}>
-                  {(() => {
-                    // Try dynamic Lucide icon first
-                    // @ts-ignore
-                    const IconComp = LucideIcons[b.icon] || ICON_MAP[b.icon as keyof typeof ICON_MAP] || HelpCircle;
-                    return <IconComp size={18} color={b.color} />;
-                  })()}
-                </View>
-                <Text style={s.bantName}>{b.name}</Text>
-                <ChevronRight size={16} color="#ccc" />
-              </TouchableOpacity>
-            ))}
+            <TouchableOpacity 
+              style={[s.bantHdr, { marginTop: 10 }]}
+              activeOpacity={0.7}
+              onPress={() => setPusatBantuanOpen(!pusatBantuanOpen)}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <HelpCircle size={18} color={colors.primary} />
+                <Text style={s.bantTitle}>Pusat Bantuan</Text>
+              </View>
+              <ChevronDown size={20} color={colors.mutedForeground} style={{ transform: [{ rotate: pusatBantuanOpen ? '180deg' : '0deg' }] }} />
+            </TouchableOpacity>
+
+            {pusatBantuanOpen && (
+              <View style={{ marginBottom: 16 }}>
+                <TouchableOpacity 
+                  style={[s.addBtn, { width: '100%', justifyContent: 'center', marginBottom: 12, height: 44, borderRadius: 12 }]} 
+                  activeOpacity={0.8}
+                  onPress={() => router.push("/lanjutan/tambah-bantuan")}
+                >
+                  <Plus size={16} color="#fff" />
+                  <Text style={[s.addBtnText, { fontSize: 14, fontFamily: 'Inter_600SemiBold' }]}>Tambah Pusat Bantuan</Text>
+                </TouchableOpacity>
+
+                {bantuan.map((b) => (
+                  <TouchableOpacity key={b.id || b.name} style={s.bantCard} activeOpacity={0.7} onPress={() => setSelectedBantuan(b)}>
+                    <View style={[s.bantIconBox, { backgroundColor: b.bg || colors.secondary }]}>
+                      {(() => {
+                        let name = b.icon.trim() || "";
+                        let isBrand = false;
+                        // Handle fa-brands fa-whatsapp format
+                        if (name.includes("fa-brands")) isBrand = true;
+                        if (name.includes(" ")) {
+                          const parts = name.split(" ");
+                          name = parts[parts.length - 1]; // Take the last part
+                        }
+                        if (name.startsWith("fa-")) name = name.replace(/^fa-(brands|solid|regular|light|thin)?\s?/, "").replace(/^fa-/, "");
+                        
+                        if (["whatsapp", "facebook", "facebook-messenger", "twitter", "instagram", "youtube", "tiktok", "github", "linkedin", "telegram"].includes(name.toLowerCase())) {
+                            isBrand = true;
+                        }
+                        
+                        return <FontAwesome name={(name as any).toLowerCase() || "question"} size={16} color={b.color || colors.primary} />;
+                      })()}
+                    </View>
+                    <Text style={s.bantName}>{b.name}</Text>
+                    <ChevronRight size={16} color="#ccc" />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
         </ScrollView>
       )}

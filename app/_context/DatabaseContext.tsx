@@ -68,6 +68,7 @@ export interface Bantuan {
   bg: string;
   color: string;
   link?: string;
+  lib?: "lucide" | "fa" | "mci";
 }
 
 enum OperationType {

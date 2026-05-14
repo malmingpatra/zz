@@ -4,11 +4,11 @@
     "slug": "warung-pos",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./public/logo.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/icon.png",
+      "image": "./public/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

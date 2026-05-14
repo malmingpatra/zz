@@ -8,6 +8,7 @@ import {
   Alert,
   TextInput,
   ActivityIndicator,
+  Platform
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { 
@@ -20,13 +21,20 @@ import {
   Shield, 
   Map,
   Save,
-  X
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  ShoppingBag,
+  X,
+  SlidersHorizontal,
+  ChevronDown
 } from "lucide-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useColors } from "./_hooks/useColors";
 import { useDatabase } from "./_context/DatabaseContext";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "./_context/firebase-setup";
+import ConfirmationModal from "./_components/ConfirmationModal";
 
 export default function DetailMemberScreen() {
   const colors = useColors();
@@ -63,12 +71,6 @@ export default function DetailMemberScreen() {
       borderWidth: 1, borderColor: colors.border,
       padding: 24, alignItems: "center",
     },
-    avatarRing: {
-      width: 76, height: 76, borderRadius: 22,
-      alignItems: "center", justifyContent: "center",
-      marginBottom: 12,
-    },
-    avatarInitials: { fontSize: 28, fontFamily: "Inter_700Bold", color: colors.primaryForeground, letterSpacing: -0.5 },
     heroName: { fontSize: 18, fontFamily: "Inter_700Bold", color: colors.foreground, marginBottom: 8, textAlign: "center" },
     badgesRow: { flexDirection: "row", gap: 6 },
     badge: {
@@ -110,11 +112,35 @@ export default function DetailMemberScreen() {
     roleChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
     roleChipText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
     roleChipTextActive: { color: colors.primaryForeground },
+    searchInput: {
+      flex: 1, height: 40, borderWidth: 1, borderColor: colors.border,
+      borderRadius: 10, paddingHorizontal: 12, paddingLeft: 36,
+      fontSize: 13, fontFamily: "Inter_500Medium", color: colors.foreground,
+      backgroundColor: colors.card,
+    },
+    searchIcon: { position: 'absolute', left: 10, top: 11, zIndex: 1, },
+    orderItem: {
+      flexDirection: 'row', alignItems: 'center', paddingVertical: 12,
+      borderBottomWidth: 1, borderBottomColor: colors.secondary, gap: 12,
+    },
+    orderItemLast: { borderBottomWidth: 0, paddingBottom: 0, },
+    orderIcon: {
+      width: 40, height: 40, borderRadius: 12, backgroundColor: colors.secondary,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    orderInfo: { flex: 1, },
+    orderName: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 2, },
+    orderDate: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground, },
+    orderRight: { alignItems: 'flex-end', gap: 4, },
+    orderPrice: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.foreground, },
+    pageRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 16, gap: 12, },
+    pageBtn: { width: 32, height: 32, borderRadius: 8, backgroundColor: colors.secondary, alignItems: 'center', justifyContent: 'center', },
+    pageText: { fontSize: 12, fontFamily: "Inter_500Medium", color: colors.mutedForeground, }
   });
 
   const router = useRouter();
   const { member_id } = useLocalSearchParams<{ member_id: string }>();
-  const { members } = useDatabase();
+  const { members, orders, updateOrderStatus } = useDatabase();
 
   const member = members.find(m => m.id === member_id);
 
@@ -127,6 +153,59 @@ export default function DetailMemberScreen() {
     role: "user",
     area: "",
   });
+
+  const [orderSearch, setOrderSearch] = useState("");
+  const [orderPage, setOrderPage] = useState(1);
+  const [isOrderHistoryOpen, setIsOrderHistoryOpen] = useState(false);
+  const [showOrderFilter, setShowOrderFilter] = useState(false);
+  const [orderStatus, setOrderStatus] = useState("");
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [selectedOrderToCancel, setSelectedOrderToCancel] = useState<any | null>(null);
+  const ORDERS_PER_PAGE = 10;
+
+  const memberOrders = React.useMemo(() => {
+    if (!member || !orders) return [];
+    
+    return orders.filter((o: any) => {
+      if (o.buyer !== member.name) return false;
+      if (orderStatus && o.status !== orderStatus) return false;
+      const q = orderSearch.trim().toLowerCase();
+      if (q) {
+        const idMatch = (o.id || "").toLowerCase() === q || (o.id || "").toLowerCase().includes(q);
+        const itemMatch = o.items && o.items.some((i: any) => (i.name || "").toLowerCase().includes(q));
+        if (!idMatch && !itemMatch) return false;
+      }
+      return true;
+    }).sort((a: any, b: any) => {
+      const ta = typeof a.createdAt === 'string' ? new Date(a.createdAt).getTime() : (a.createdAt?.toMillis?.() || 0);
+      const tb = typeof b.createdAt === 'string' ? new Date(b.createdAt).getTime() : (b.createdAt?.toMillis?.() || 0);
+      return tb - ta;
+    });
+  }, [orders, member, orderSearch, orderStatus]);
+
+  const totalPages = Math.ceil(memberOrders.length / ORDERS_PER_PAGE);
+  const paginatedOrders = React.useMemo(() => {
+    const start = (orderPage - 1) * ORDERS_PER_PAGE;
+    return memberOrders.slice(start, start + ORDERS_PER_PAGE);
+  }, [memberOrders, orderPage]);
+
+  function badgeStyle(status: string) {
+    if (status === "selesai") return { backgroundColor: "#EAF3DE", color: "#27500A", borderColor: "#27500A" };
+    if (status === "diproses") return { backgroundColor: "#FFF7D4", color: "#8B6508", borderColor: "#8B6508" };
+    if (status === "menunggu") return { backgroundColor: "#E6F1FB", color: "#0C447C", borderColor: "#0C447C" };
+    if (status === "dibatalkan") return { backgroundColor: "#FCE8E8", color: "#991B1B", borderColor: "#991B1B" };
+    return { backgroundColor: colors.secondary, color: colors.foreground, borderColor: colors.border };
+  }
+  
+  function badgeLabel(status: string) {
+    return status?.charAt(0).toUpperCase() + status?.slice(1) || "-";
+  }
+  
+  function fmt(n: number) {
+    if (!n) return "Rp 0";
+    return "Rp " + n.toLocaleString("id-ID");
+  }
 
   useEffect(() => {
     if (member) {
@@ -197,16 +276,6 @@ export default function DetailMemberScreen() {
       <ScrollView style={s.scroll} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Hero */}
         <View style={s.hero}>
-          <View style={[s.avatarRing, { background: undefined, backgroundColor: undefined }]}>
-            <View style={{
-              width: 76, height: 76, borderRadius: 22,
-              alignItems: "center", justifyContent: "center",
-              backgroundColor: colors.primary,
-            }}>
-              <Text style={s.avatarInitials}>{member.initials}</Text>
-            </View>
-          </View>
-          
           {isEditing ? (
             <TextInput
               style={[s.input, { textAlign: "center", fontSize: 16, marginBottom: 8 }]}
@@ -217,15 +286,6 @@ export default function DetailMemberScreen() {
           ) : (
             <Text style={s.heroName}>{member.name}</Text>
           )}
-
-          <View style={s.badgesRow}>
-            <Text style={[s.badge, { backgroundColor: "#E6F1FB", color: "#0C447C" }]}>
-              {member.role || "user"}
-            </Text>
-            <Text style={[s.badge, { backgroundColor: member.status === "aktif" ? "#EAF3DE" : "#F5F5F5", color: member.status === "aktif" ? "#27500A" : "#888" }]}>
-              {member.status === "aktif" ? "Aktif" : "Non-aktif"}
-            </Text>
-          </View>
         </View>
 
         <View style={s.cards}>
@@ -280,7 +340,7 @@ export default function DetailMemberScreen() {
             <Text style={s.cardLabel}>Informasi Akun</Text>
             <View style={s.infoRow}>
               <View style={s.infoIcon}><Shield size={15} color="#888" /></View>
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 1, paddingRight: isEditing ? 0 : 10 }}>
                 <Text style={s.infoKey}>Role</Text>
                 {isEditing ? (
                   <View style={s.roleChips}>
@@ -317,6 +377,153 @@ export default function DetailMemberScreen() {
             </View>
           </View>
           
+          {/* Riwayat Pesanan */}
+          {!isEditing && (
+            <View style={[s.card, { padding: 0, overflow: 'hidden' }]}>
+              <TouchableOpacity 
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 14, backgroundColor: colors.card }}
+                activeOpacity={0.7}
+                onPress={() => setIsOrderHistoryOpen(!isOrderHistoryOpen)}
+              >
+                <Text style={[s.cardLabel, { marginBottom: 0 }]}>Riwayat Pesanan</Text>
+                <ChevronDown size={20} color={colors.mutedForeground} style={{ transform: [{ rotate: isOrderHistoryOpen ? '180deg' : '0deg' }] }} />
+              </TouchableOpacity>
+              
+              {isOrderHistoryOpen && (
+                <View style={{ padding: 14, paddingTop: 0 }}>
+                  <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                    <View style={{ position: 'relative', flex: 1 }}>
+                      <View style={s.searchIcon}>
+                        <Search size={16} color={colors.mutedForeground} />
+                      </View>
+                      <TextInput
+                        style={s.searchInput}
+                        placeholder="Cari pesanan..."
+                        placeholderTextColor={colors.mutedForeground}
+                        value={orderSearch}
+                        onChangeText={(val) => {
+                          setOrderSearch(val);
+                          setOrderPage(1);
+                        }}
+                      />
+                    </View>
+                    <TouchableOpacity 
+                      style={{ 
+                        width: 40, height: 40, borderRadius: 10, borderWidth: 1, 
+                        borderColor: showOrderFilter ? colors.primary : colors.border, 
+                        backgroundColor: showOrderFilter ? colors.primary : colors.card,
+                        alignItems: 'center', justifyContent: 'center'
+                      }}
+                      onPress={() => setShowOrderFilter(!showOrderFilter)}
+                    >
+                      <SlidersHorizontal size={18} color={showOrderFilter ? colors.primaryForeground : colors.mutedForeground} />
+                    </TouchableOpacity>
+                  </View>
+
+                  {showOrderFilter && (
+                    <View style={{ flexDirection: 'row', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+                      {["menunggu", "diproses", "selesai", "dibatalkan"].map(st => (
+                        <TouchableOpacity
+                          key={st}
+                          style={{
+                            paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16,
+                            backgroundColor: orderStatus === st ? colors.primary : colors.secondary,
+                            borderWidth: 1, borderColor: orderStatus === st ? colors.primary : colors.border
+                          }}
+                          onPress={() => { setOrderStatus(orderStatus === st ? "" : st); setOrderPage(1); }}
+                        >
+                          <Text style={{ 
+                            fontSize: 11, fontFamily: "Inter_500Medium", 
+                            color: orderStatus === st ? colors.primaryForeground : colors.mutedForeground,
+                            textTransform: 'capitalize' 
+                          }}>
+                            {st.charAt(0).toUpperCase() + st.slice(1)}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                  
+                  {paginatedOrders.length > 0 ? (
+                    <>
+                      {paginatedOrders.map((o: any, i: number, arr: any[]) => (
+                        <View key={o.id} style={[i !== arr.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.secondary }]}>
+                          <TouchableOpacity 
+                            style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 12, gap: 12 }}
+                            activeOpacity={0.7}
+                            onPress={() => setExpandedOrderId(expandedOrderId === o.id ? null : o.id)}
+                          >
+                            <View style={s.orderIcon}>
+                              <ShoppingBag size={18} color={colors.primary} />
+                            </View>
+                            <View style={s.orderInfo}>
+                              <Text style={s.orderName} numberOfLines={1}>{"Pesanan #" + o.id.toUpperCase()}</Text>
+                              <Text style={s.orderDate}>{o.date || "-"}</Text>
+                            </View>
+                            <View style={[s.orderRight, { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }]}>
+                              <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                                <Text style={[s.badge, badgeStyle(o.status)]}>{badgeLabel(o.status)}</Text>
+                                <Text style={s.orderPrice}>{fmt(o.total)}</Text>
+                              </View>
+                              <ChevronDown size={18} color={colors.mutedForeground} style={{ transform: [{ rotate: expandedOrderId === o.id ? '180deg' : '0deg' }] }} />
+                            </View>
+                          </TouchableOpacity>
+
+                          {expandedOrderId === o.id && (
+                            <View style={{ paddingBottom: 16, paddingTop: 4, paddingLeft: 52 }}>
+                              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                                <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: colors.mutedForeground }}>Total Belanja:</Text>
+                                <Text style={{ fontSize: 13, fontFamily: "Inter_700Bold", color: colors.foreground }}>{fmt(o.total)}</Text>
+                              </View>
+                              
+                              <View style={{ flexDirection: 'row', gap: 10 }}>
+                                {o.status !== "selesai" && o.status !== "dibatalkan" && updateOrderStatus && (
+                                  <TouchableOpacity 
+                                    style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: "#FCE8E8", alignItems: 'center', borderWidth: 1, borderColor: "#F8B4B4" }}
+                                    onPress={() => {
+                                      setSelectedOrderToCancel(o);
+                                      setShowCancelConfirm(true);
+                                    }}
+                                  >
+                                    <Text style={{ fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#991B1B" }}>Batalkan</Text>
+                                  </TouchableOpacity>
+                                )}
+                              </View>
+                            </View>
+                          )}
+                        </View>
+                      ))}
+                      
+                      {totalPages > 1 && (
+                        <View style={s.pageRow}>
+                          <TouchableOpacity 
+                            style={[s.pageBtn, orderPage === 1 && { opacity: 0.3 }]}
+                            disabled={orderPage === 1}
+                            onPress={() => setOrderPage(p => Math.max(1, p - 1))}
+                          >
+                            <ChevronLeft size={18} color={colors.foreground} />
+                          </TouchableOpacity>
+                          <Text style={s.pageText}>{orderPage} / {totalPages}</Text>
+                          <TouchableOpacity 
+                            style={[s.pageBtn, orderPage === totalPages && { opacity: 0.3 }]}
+                            disabled={orderPage === totalPages}
+                            onPress={() => setOrderPage(p => Math.min(totalPages, p + 1))}
+                          >
+                            <ChevronRight size={18} color={colors.foreground} />
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </>
+                  ) : (
+                    <Text style={{ textAlign: 'center', paddingVertical: 12, fontSize: 13, color: colors.mutedForeground, fontFamily: "Inter_500Medium" }}>
+                      {orderSearch.trim() || orderStatus ? "Tidak ada pesanan yang sesuai." : "Belum ada pesanan."}
+                    </Text>
+                  )}
+                </View>
+              )}
+            </View>
+          )}
+
           {isEditing && (
             <TouchableOpacity 
               style={{ padding: 12, alignItems: 'center' }}
@@ -328,6 +535,28 @@ export default function DetailMemberScreen() {
 
         </View>
       </ScrollView>
+
+      <ConfirmationModal
+        visible={showCancelConfirm}
+        title="Batalkan Pesanan"
+        message="Apakah Anda yakin ingin membatalkan pesanan ini? Stok akan dikembalikan secara otomatis."
+        confirmLabel="Ya, Batalkan"
+        isDanger={true}
+        onConfirm={async () => {
+          if (!selectedOrderToCancel || !updateOrderStatus) return;
+          try {
+            await updateOrderStatus(selectedOrderToCancel.id, "dibatalkan", "");
+            setShowCancelConfirm(false);
+            setSelectedOrderToCancel(null);
+          } catch (e) {
+            Alert.alert("Error", "Gagal membatalkan pesanan");
+          }
+        }}
+        onCancel={() => {
+          setShowCancelConfirm(false);
+          setSelectedOrderToCancel(null);
+        }}
+      />
     </View>
   );
 }

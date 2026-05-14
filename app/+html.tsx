@@ -1,6 +1,5 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
-
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="id">
@@ -12,12 +11,12 @@ export default function Root({ children }: PropsWithChildren) {
         {/* PWA Tags */}
         <title>Warung POS</title>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#1A6B3C" />
-        <link rel="apple-touch-icon" href="/pwa-icon.svg" />
-        <link rel="icon" type="image/svg+xml" href="/pwa-icon.svg" />
+        <meta name="theme-color" content="#1A6B47" />
+        <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="icon" type="image/png" href="/logo.png" />
+        <link rel="shortcut icon" href="/logo.png" />
         
         <ScrollViewStyleReset />
-
         {/* CSS Print - sembunyikan elemen no-print saat cetak */}
         <style>{`
           @media print {
@@ -25,7 +24,6 @@ export default function Root({ children }: PropsWithChildren) {
             body { background: white !important; }
           }
         `}</style>
-
         {/* Sembunyikan URL path */}
         <script dangerouslySetInnerHTML={{
           __html: `
@@ -48,7 +46,6 @@ export default function Root({ children }: PropsWithChildren) {
             })();
           `
         }} />
-
         <script dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator) {
@@ -67,5 +64,4 @@ export default function Root({ children }: PropsWithChildren) {
     </html>
   );
 }
-
-// sync-trigger-v2
+// sync-trigger-v4

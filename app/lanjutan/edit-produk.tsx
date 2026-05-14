@@ -24,19 +24,6 @@ function fmt(n: number) {
   return "Rp " + n.toLocaleString("id-ID");
 }
 
-const DESCRIPTIONS: Record<string, string> = {
-  "1": "Es teh manis segar dengan gula asli, diseduh dari teh pilihan. Cocok diminum dingin sebagai teman makan siang.",
-  "2": "Ayam goreng crispy bumbu rempah khas dengan kulit garing dan dagingnya tetap juicy. Cocok disajikan dengan nasi putih hangat dan sambal.",
-  "3": "Air mineral murni dalam kemasan higienis. Sumber hidrasi terpercaya untuk aktivitas sehari-hari.",
-  "4": "Mie instan dengan bumbu khas, siap saji dalam hitungan menit. Tersedia berbagai varian rasa.",
-  "5": "Beras premium pilihan, pulen dan harum. Kemasan 5 kg cukup untuk kebutuhan keluarga selama seminggu.",
-  "6": "Minyak goreng refinery berkualitas tinggi, jernih dan sehat untuk menggoreng berbagai masakan.",
-  "7": "Kopi sachet praktis dengan rasa nikmat. Tersedia rasa original, susu, dan gula aren.",
-  "8": "Indomie goreng legendaris dengan bumbu rempah khas. Favorit semua kalangan, enak disajikan panas maupun dingin.",
-  "9": "Susu UHT full cream dalam kemasan siap minum. Kaya protein dan kalsium untuk pertumbuhan optimal.",
-  "10": "Rokok kretek filter dengan campuran tembakau dan cengkeh pilihan. Untuk konsumen dewasa.",
-};
-
 export default function ProductDetailScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -242,7 +229,7 @@ export default function ProductDetailScreen() {
         {/* Deskripsi */}
         <View style={s.section}>
           <Text style={s.secLabel}>Deskripsi</Text>
-          <Text style={s.descText}>{DESCRIPTIONS[product.id] ?? "Belum ada deskripsi untuk produk ini."}</Text>
+          <Text style={s.descText}>{product.desc ?? "Belum ada deskripsi untuk produk ini."}</Text>
         </View>
 
         {/* Qty */}
