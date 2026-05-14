@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
+  ScrollView,
   Alert,
   ActivityIndicator,
   Platform,
@@ -40,6 +41,8 @@ export default function EditMassalScreen() {
   const [search, setSearch] = useState("");
   const [selectedCat, setSelectedCat] = useState("Semua");
   const [catOpen, setCatOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 20;
 
   // ── edits: productId → {stock, price} ──
   const [drafts, setDrafts] = useState<Record<string, DraftEdit>>({});
@@ -66,6 +69,16 @@ export default function EditMassalScreen() {
         return a.name.localeCompare(b.name);
       });
   }, [products, search, selectedCat]);
+
+  const totalPages = Math.ceil(filtered.length / PRODUCTS_PER_PAGE);
+  const paginated = useMemo(() => {
+    return filtered.slice((page - 1) * PRODUCTS_PER_PAGE, page * PRODUCTS_PER_PAGE);
+  }, [filtered, page]);
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setPage(1);
+  }, [search, selectedCat]);
 
   // Count dirty items
   const dirtyCount = useMemo(() => {
@@ -204,6 +217,7 @@ export default function EditMassalScreen() {
       backgroundColor: colors.card,
       borderRadius: 10, borderWidth: 1, borderColor: colors.border,
       shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 8, elevation: 4,
+      maxHeight: 300, overflow: "hidden",
     },
     catItem: {
       flexDirection: "row", justifyContent: "space-between", alignItems: "center",
@@ -260,6 +274,21 @@ export default function EditMassalScreen() {
       minWidth: 20, alignItems: "center",
     },
     dirtyBadgeText: { fontSize: 10, fontFamily: "Inter_600SemiBold", color: colors.primaryForeground },
+    
+    pagination: {
+      flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+      padding: 12, backgroundColor: colors.card,
+      borderTopWidth: 1, borderTopColor: colors.border,
+    },
+    pageBtn: {
+      paddingHorizontal: 12, paddingVertical: 8,
+      borderRadius: 8, backgroundColor: colors.secondary,
+      borderWidth: 1, borderColor: colors.border,
+      minWidth: 80, alignItems: "center",
+    },
+    pageBtnDisabled: { opacity: 0.4 },
+    pageBtnText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.foreground },
+    pageInfo: { fontSize: 12, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
   });
 
   // Group filtered by category
@@ -267,7 +296,7 @@ export default function EditMassalScreen() {
   const listData = useMemo<ListItem[]>(() => {
     const items: ListItem[] = [];
     let lastCat = "";
-    for (const p of filtered) {
+    for (const p of paginated) {
       if (p.category !== lastCat) {
         items.push({ type: "header", title: p.category });
         lastCat = p.category;
@@ -275,7 +304,7 @@ export default function EditMassalScreen() {
       items.push({ type: "product", product: p });
     }
     return items;
-  }, [filtered]);
+  }, [paginated]);
 
   function renderItem({ item }: { item: ListItem }) {
     if (item.type === "header") {
@@ -394,19 +423,21 @@ export default function EditMassalScreen() {
       {/* Category dropdown overlay */}
       {catOpen && (
         <View style={s.catDropdown}>
-          {categories.map((c, i) => (
-            <TouchableOpacity
-              key={c}
-              style={[s.catItem, i === categories.length - 1 && { borderBottomWidth: 0 }]}
-              onPress={() => { setSelectedCat(c); setCatOpen(false); }}
-              activeOpacity={0.7}
-            >
-              <Text style={[s.catItemText, selectedCat === c && { color: colors.primary, fontFamily: "Inter_600SemiBold" }]}>
-                {c === "Semua" ? "Semua Kategori" : c}
-              </Text>
-              {selectedCat === c && <Check size={15} color={colors.primary} />}
-            </TouchableOpacity>
-          ))}
+          <ScrollView bounces={false} showsVerticalScrollIndicator={true}>
+            {categories.map((c, i) => (
+              <TouchableOpacity
+                key={c}
+                style={[s.catItem, i === categories.length - 1 && { borderBottomWidth: 0 }]}
+                onPress={() => { setSelectedCat(c); setCatOpen(false); }}
+                activeOpacity={0.7}
+              >
+                <Text style={[s.catItemText, selectedCat === c && { color: colors.primary, fontFamily: "Inter_600SemiBold" }]}>
+                  {c === "Semua" ? "Semua Kategori" : c}
+                </Text>
+                {selectedCat === c && <Check size={15} color={colors.primary} />}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
       )}
 
@@ -425,6 +456,28 @@ export default function EditMassalScreen() {
           </View>
         }
       />
+
+      {totalPages > 1 && (
+        <View style={s.pagination}>
+          <TouchableOpacity
+            style={[s.pageBtn, page === 1 && s.pageBtnDisabled]}
+            disabled={page === 1}
+            onPress={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            <Text style={s.pageBtnText}>Sebelumnya</Text>
+          </TouchableOpacity>
+          
+          <Text style={s.pageInfo}>Halaman {page} dari {totalPages}</Text>
+
+          <TouchableOpacity
+            style={[s.pageBtn, page === totalPages && s.pageBtnDisabled]}
+            disabled={page === totalPages}
+            onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
+          >
+            <Text style={s.pageBtnText}>Berikutnya</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       
       <DialogOverlay context={dialogContext} onClose={() => setDialogContext(null)} />
     </View>

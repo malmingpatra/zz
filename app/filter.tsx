@@ -49,9 +49,10 @@ export default function FilterPage() {
     content: { flex: 1 },
     
     searchSection: {
-      padding: 16,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 8,
       backgroundColor: colors.card,
-      marginBottom: 12,
     },
     searchBox: {
       flexDirection: "row", alignItems: "center",
@@ -186,29 +187,27 @@ export default function FilterPage() {
           <Text style={s.resetText}>Reset</Text>
         </TouchableOpacity>
       </View>
+      
+      <View style={s.searchSection}>
+        <View style={s.searchBox}>
+          <Search size={14} color="#aaa" />
+          <TextInput
+            style={s.searchInput}
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Cari kategori..."
+            placeholderTextColor="#C0BDB5"
+            underlineColorAndroid="transparent"
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => setSearch("")}>
+              <X size={14} color="#aaa" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={s.content}>
-        <View style={s.searchSection}>
-          <View style={s.searchBox}>
-            <Search size={14} color="#aaa" />
-            <TextInput
-              style={s.searchInput}
-              value={search}
-              onChangeText={setSearch}
-              placeholder="Cari kategori..."
-              placeholderTextColor="#C0BDB5"
-              underlineColorAndroid="transparent"
-            />
-            {search.length > 0 && (
-              <TouchableOpacity onPress={() => setSearch("")}>
-                <X size={14} color="#aaa" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        <Text style={s.secLabel}>Kategori</Text>
-
         <View style={s.catList}>
           {filteredCats.map((cat, i) => {
             const isActive = selected.includes(cat);

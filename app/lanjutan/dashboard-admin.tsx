@@ -1045,7 +1045,7 @@ export default function KasirScreen() {
                   <TouchableOpacity
                     key={o.id}
                     style={s.orderCard}
-                    onPress={() => router.push({ pathname: "/pesanan/[pesanan_id]", params: { pesanan_id: o.id } })}
+                    onPress={() => router.push({ pathname: "/lanjutan/detail-pesanan", params: { pesanan_id: o.id } })}
                     activeOpacity={0.75}
                   >
                     <View style={s.orderTop}>
@@ -1831,7 +1831,7 @@ export default function KasirScreen() {
                       <TouchableOpacity
                         key={m.id || m.name}
                         style={s.memberCard}
-                        onPress={() => router.push({ pathname: "/member/[member_id]", params: { member_id: m.id } })}
+                        onPress={() => router.push({ pathname: "/detail-riwayat-pesanan", params: { member_id: m.id } })}
                         activeOpacity={0.75}
                       >
                         <View style={s.memberAvatar}>

@@ -140,7 +140,7 @@ export default function KeranjangKasir({ visible, onClose }: KeranjangKasirProps
     if (shouldPrint) {
       onClose();
       router.push({
-        pathname: "/nota",
+        pathname: "/cetak-nota",
         params: {
           orderId: orderId,
         },

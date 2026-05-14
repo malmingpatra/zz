@@ -848,7 +848,7 @@ export default function ProfilScreen() {
                       style={[s.primaryBtn, { flex: 1, backgroundColor: colors.primary }]} 
                       onPress={() => {
                         setSelectedOrder(null);
-                        router.push({ pathname: "/nota", params: { orderId: selectedOrder.id } });
+                        router.push({ pathname: "/cetak-nota", params: { orderId: selectedOrder.id } });
                       }}
                     >
                       <Printer size={18} color={colors.primaryForeground} />

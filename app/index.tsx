@@ -42,7 +42,8 @@ function fmt(n: number) {
 function ProductRow({ product, onPress }: { product: Product; onPress: () => void }) {
   const colors = useColors();
   const { addToCart } = useCart();
-  const isWarn = product.stockStatus === "warn";
+  const isOutOfStock = (product.stock || 0) <= 0;
+  const isWarn = product.stockStatus === "warn" && !isOutOfStock;
 
   const s = StyleSheet.create({
     row: {
@@ -78,8 +79,10 @@ function ProductRow({ product, onPress }: { product: Product; onPress: () => voi
       letterSpacing: 0.8,
       overflow: "hidden",
       borderWidth: 1,
+      flexShrink: 0,
     },
     categoryLabel: {
+      flex: 1,
       fontSize: 10,
       color: colors.mutedForeground,
       fontFamily: "Inter_400Regular",
@@ -115,25 +118,30 @@ function ProductRow({ product, onPress }: { product: Product; onPress: () => voi
             style={[
               s.stokTag,
               {
-                backgroundColor: isWarn ? colors.stokWarnBg : colors.stokOkBg,
-                color: isWarn ? colors.stokWarnText : colors.stokOkText,
-                borderColor: isWarn ? colors.stokWarnBorder : colors.stokOkBorder,
+                backgroundColor: isOutOfStock ? colors.destructive + "15" : isWarn ? colors.stokWarnBg : colors.stokOkBg,
+                color: isOutOfStock ? colors.destructive : isWarn ? colors.stokWarnText : colors.stokOkText,
+                borderColor: isOutOfStock ? colors.destructive + "30" : isWarn ? colors.stokWarnBorder : colors.stokOkBorder,
               },
             ]}
           >
-            Stok {product.stock}
+            {isOutOfStock ? "HABIS" : `Stok ${product.stock}`}
           </Text>
-          <Text style={s.categoryLabel}>{product.category}</Text>
+          <Text style={s.categoryLabel} numberOfLines={1}>{product.category}</Text>
         </View>
         <Text style={s.price}>{fmt(product.price)}</Text>
       </View>
       <TouchableOpacity
-        style={s.addBtn}
-        onPress={(e) => { e.stopPropagation?.(); addToCart(product.id); }}
+        style={[s.addBtn, isOutOfStock && { opacity: 0.5, borderColor: colors.border }]}
+        onPress={(e) => { 
+          if (isOutOfStock) return;
+          e.stopPropagation?.(); 
+          addToCart(product.id); 
+        }}
         activeOpacity={0.7}
+        disabled={isOutOfStock}
         hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
       >
-        <Plus size={20} color={colors.primary} />
+        <Plus size={20} color={isOutOfStock ? colors.mutedForeground : colors.primary} />
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -191,7 +199,13 @@ export default function POSScreen() {
       activeCategories.includes("Semua") ||
       activeCategories.includes(p.category);
     return matchSearch && matchCat;
-  }).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  }).sort((a, b) => {
+    const sA = (a.stock || 0) <= 0;
+    const sB = (b.stock || 0) <= 0;
+    if (sA && !sB) return 1;
+    if (!sA && sB) return -1;
+    return (a.name || "").localeCompare(b.name || "");
+  });
 
   const paginated = filtered.slice((page - 1) * PRODUCTS_PER_PAGE, page * PRODUCTS_PER_PAGE);
   const totalPages = Math.ceil(filtered.length / PRODUCTS_PER_PAGE);
@@ -389,7 +403,7 @@ export default function POSScreen() {
         renderItem={({ item }) => (
           <ProductRow
             product={item}
-            onPress={() => router.push(`/produk/${item.id}`)}
+            onPress={() => router.push({ pathname: "/lanjutan/edit-produk", params: { produk_id: item.id } })}
           />
         )}
         showsVerticalScrollIndicator={false}
@@ -456,7 +470,7 @@ export default function POSScreen() {
             {/* Mode Switch Button */}
             <TouchableOpacity 
               style={s.switchBtn} 
-              onPress={() => { setDropdownOpen(false); router.push("/lanjutan/dashboard"); }} 
+              onPress={() => { setDropdownOpen(false); router.push("/lanjutan/dashboard-admin"); }} 
               activeOpacity={0.7}
             >
               <ArrowRightLeft size={16} color={colors.primaryForeground} />
