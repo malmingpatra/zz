@@ -29,6 +29,7 @@ import {
   ChevronRight, 
   ChevronDown,
   ArrowRight,
+  LogOut,
   MessageCircle, 
   BookOpen, 
   HelpCircle, 
@@ -182,6 +183,30 @@ export default function KasirScreen() {
   const [showMemberAdvancedFilter, setShowMemberAdvancedFilter] = useState(false);
   const [selectedBantuan, setSelectedBantuan] = useState<Bantuan | null>(null);
   const [memberPage, setMemberPage] = useState(1);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
+  const dropdownRef = React.useRef<View>(null);
+
+  const toggleDropdown = () => {
+    if (dropdownRef.current) {
+      dropdownRef.current.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
+        setDropdownPos({ top: pageY + height + 5, left: pageX });
+        setDropdownOpen(!dropdownOpen);
+      });
+    } else {
+      setDropdownOpen(!dropdownOpen);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      router.replace("/login");
+    } catch (e) {
+      console.error("Logout error:", e);
+    }
+  };
+
   const [statPeriod, setStatPeriod] = useState("7hari");
   const [customDates, setCustomDates] = useState({
     start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
@@ -639,6 +664,47 @@ export default function KasirScreen() {
     printReportBtnText: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primaryForeground },
     emptyBox: { alignItems: "center", padding: 40, gap: 8 },
     emptyText: { fontSize: 13, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
+    
+    // Dropdown Styles
+    dropdown: {
+      position: "absolute",
+      backgroundColor: colors.card,
+      width: 180,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 12,
+      elevation: 10,
+      overflow: "hidden",
+      zIndex: 1000,
+    },
+    dropdownHeader: {
+      padding: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      backgroundColor: colors.secondary + "30",
+    },
+    dropdownHeaderTitle: {
+      fontSize: 14,
+      fontFamily: "Inter_700Bold",
+      color: colors.foreground,
+    },
+    dropdownItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      padding: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    dropdownItemText: {
+      fontSize: 13,
+      fontFamily: "Inter_500Medium",
+      color: colors.foreground,
+    },
   });
 
   const TABS: { key: Tab; icon: keyof typeof ICON_MAP; label: string }[] = [
@@ -839,27 +905,35 @@ export default function KasirScreen() {
       )}
       {/* Header */}
       <View style={s.header}>
-        <View style={[s.avatar, { borderColor: isConnected ? "#4CAF50" : "#F44336" }]}>
-          <User size={20} color={isConnected ? "#4CAF50" : "#F44336"} />
-          <View style={{
-            position: 'absolute',
-            bottom: -2,
-            right: -2,
-            width: 12,
-            height: 12,
-            borderRadius: 6,
-            backgroundColor: isConnected ? "#4CAF50" : "#F44336",
-            borderWidth: 2,
-            borderColor: "#fff"
-          }} />
-        </View>
-        <View style={s.headerName}>
-          <Text style={s.headerSub}>{userProfile?.role === "admin" ? "Administrator" : "Kasir Toko"}</Text>
-          <Text style={s.headerTitle}>{userProfile?.displayName || auth.currentUser?.displayName || "Admin User"}</Text>
-        </View>
+        <TouchableOpacity 
+          ref={dropdownRef}
+          style={{ flexDirection: "row", alignItems: "center", flex: 1, gap: 10 }}
+          onPress={toggleDropdown}
+          activeOpacity={0.7}
+        >
+          <View style={[s.avatar, { borderColor: isConnected ? "#4CAF50" : "#F44336" }]}>
+            <User size={20} color={isConnected ? "#4CAF50" : "#F44336"} />
+            <View style={{
+              position: 'absolute',
+              bottom: -2,
+              right: -2,
+              width: 12,
+              height: 12,
+              borderRadius: 6,
+              backgroundColor: isConnected ? "#4CAF50" : "#F44336",
+              borderWidth: 2,
+              borderColor: "#fff"
+            }} />
+          </View>
+          <View style={s.headerName}>
+            <Text style={s.headerSub}>{userProfile?.role === "admin" ? "Administrator" : "Kasir Toko"}</Text>
+            <Text style={s.headerTitle}>{userProfile?.displayName?.split(" ")[0] || auth.currentUser?.displayName?.split(" ")[0] || "Admin"}</Text>
+          </View>
+        </TouchableOpacity>
+        
         <TouchableOpacity style={s.switchBtn} onPress={() => router.back()} activeOpacity={0.8}>
           <ArrowRightLeft size={16} color={colors.foreground} />
-          <Text style={s.switchBtnText}>Switch</Text>
+          <Text style={s.switchBtnText}>Kasir</Text>
         </TouchableOpacity>
       </View>
 
@@ -2022,6 +2096,40 @@ export default function KasirScreen() {
                 </TouchableOpacity>
               )}
             </View>
+          </View>
+        </View>
+      )}
+
+      {/* Profile Dropdown */}
+      {dropdownOpen && (
+        <View style={StyleSheet.absoluteFill}>
+          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setDropdownOpen(false)} />
+          <View style={[s.dropdown, { top: dropdownPos.top, left: dropdownPos.left }]}>
+            <View style={s.dropdownHeader}>
+               <Text style={s.dropdownHeaderTitle}>
+                {userProfile?.displayName?.split(" ")[0] || auth.currentUser?.displayName?.split(" ")[0] || "User"}
+               </Text>
+            </View>
+
+            <TouchableOpacity 
+              style={s.dropdownItem} 
+              onPress={() => { setDropdownOpen(false); setTab("admin"); }}
+              activeOpacity={0.7}
+            >
+              <LucideIcons.Settings size={16} color={colors.mutedForeground} />
+              <Text style={s.dropdownItemText}>Pengaturan</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[s.dropdownItem, { borderBottomWidth: 0 }]} 
+              onPress={() => { setDropdownOpen(false); handleLogout(); }}
+              activeOpacity={0.7}
+            >
+              <LogOut size={16} color={colors.destructive} />
+              <Text style={[s.dropdownItemText, { color: colors.destructive }]}>
+                {auth.currentUser ? "Keluar" : "Masuk"}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       )}

@@ -310,7 +310,7 @@ export default function DetailPesananScreen() {
             <TouchableOpacity
               style={s.outlineBtn}
               activeOpacity={0.8}
-              onPress={() => router.push(`/resi/${order.id}`)}
+              onPress={() => router.push({ pathname: "/lanjutan/cetak-resi", params: { resi_id: order.id } })}
               disabled={loading}
             >
               <Printer size={18} color="#888" />
@@ -367,7 +367,7 @@ export default function DetailPesananScreen() {
             <TouchableOpacity
               style={s.outlineBtn}
               activeOpacity={0.8}
-              onPress={() => router.push(`/resi/${order.id}`)}
+              onPress={() => router.push({ pathname: "/lanjutan/cetak-resi", params: { resi_id: order.id } })}
               disabled={loading}
             >
               <Printer size={18} color="#888" />
@@ -380,7 +380,7 @@ export default function DetailPesananScreen() {
           <TouchableOpacity
             style={s.outlineBtn}
             activeOpacity={0.8}
-            onPress={() => router.push(`/resi/${order.id}`)}
+            onPress={() => router.push({ pathname: "/lanjutan/cetak-resi", params: { resi_id: order.id } })}
             disabled={loading}
           >
             <Printer size={18} color="#888" />

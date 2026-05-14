@@ -458,13 +458,9 @@ export default function POSScreen() {
           <View style={[s.dropdown, { top: dropdownPos.top, left: dropdownPos.left }]}>
             {/* Header */}
             <View style={s.dropdownHeader}>
-              <Text style={s.dropdownHeaderTitle}>Akun</Text>
-              <View style={s.dropdownStatusRow}>
-                <View style={s.dropdownStatusDot} />
-                <Text style={s.dropdownStatusText}>
-                  {isOnline ? "Terhubung" : "Tidak ada jaringan"}
-                </Text>
-              </View>
+              <Text style={[s.dropdownHeaderTitle, { color: colors.foreground, textTransform: "none", fontSize: 14 }]}>
+                {user?.displayName?.split(" ")[0] || "User"}
+              </Text>
             </View>
 
             {/* Mode Switch Button */}
