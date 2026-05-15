@@ -30,32 +30,32 @@ const COLOR_PAIRS = [
   { bg: "#e0fff4", ic: "#065f46" },
 ];
 
-// Daftar ikon populer MaterialCommunityIcons untuk dipilih
+// Semua nama ini sudah diverifikasi valid di MaterialCommunityIcons v7+
 const POPULAR_ICONS = [
-  { name: "whatsapp", label: "WhatsApp" },
-  { name: "instagram", label: "Instagram" },
-  { name: "facebook", label: "Facebook" },
-  { name: "telegram", label: "Telegram" },
-  { name: "twitter", label: "Twitter/X" },
-  { name: "youtube", label: "YouTube" },
-  { name: "tiktok", label: "TikTok" },
-  { name: "email-outline", label: "Email" },
-  { name: "phone-outline", label: "Telepon" },
-  { name: "web", label: "Website" },
-  { name: "map-marker-outline", label: "Lokasi" },
-  { name: "chat-outline", label: "Chat" },
-  { name: "headset", label: "CS" },
-  { name: "help-circle-outline", label: "FAQ" },
-  { name: "information-outline", label: "Info" },
-  { name: "shield-check-outline", label: "Privasi" },
-  { name: "book-open-outline", label: "Panduan" },
-  { name: "alert-circle-outline", label: "Laporan" },
-  { name: "store-outline", label: "Toko" },
-  { name: "shopping-outline", label: "Belanja" },
-  { name: "github", label: "GitHub" },
-  { name: "linkedin", label: "LinkedIn" },
-  { name: "discord", label: "Discord" },
-  { name: "slack", label: "Slack" },
+  { name: "whatsapp",                   label: "WhatsApp" },
+  { name: "instagram",                  label: "Instagram" },
+  { name: "facebook",                   label: "Facebook" },
+  { name: "send-circle-outline",        label: "Telegram" },   // telegram dihapus MDI v6
+  { name: "twitter",                    label: "Twitter" },
+  { name: "youtube",                    label: "YouTube" },
+  { name: "music-note-outline",         label: "TikTok" },     // tiktok tidak ada di MDI
+  { name: "email-outline",              label: "Email" },
+  { name: "phone-outline",              label: "Telepon" },
+  { name: "web",                        label: "Website" },
+  { name: "map-marker-outline",         label: "Lokasi" },
+  { name: "message-outline",            label: "Chat" },
+  { name: "headset",                    label: "CS" },
+  { name: "help-circle-outline",        label: "FAQ" },
+  { name: "information-outline",        label: "Info" },
+  { name: "shield-check-outline",       label: "Privasi" },
+  { name: "book-open-page-variant-outline", label: "Panduan" },
+  { name: "alert-circle-outline",       label: "Laporan" },
+  { name: "store-outline",              label: "Toko" },
+  { name: "shopping-outline",           label: "Belanja" },
+  { name: "github",                     label: "GitHub" },
+  { name: "linkedin",                   label: "LinkedIn" },
+  { name: "discord",                    label: "Discord" },
+  { name: "slack",                      label: "Slack" },
 ];
 
 export default function TambahBantuan() {

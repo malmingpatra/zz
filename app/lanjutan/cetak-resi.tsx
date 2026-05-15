@@ -135,18 +135,38 @@ export default function ResiScreen() {
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <style>
             * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: monospace; padding: 20px; font-size: 12px; max-width: 380px; margin: 0 auto; color: #1a1a1a; }
+            @page {
+              size: 105mm auto;
+              margin: 0;
+            }
+            html, body { 
+              width: 105mm; 
+              margin: 0 auto; 
+              background-color: #fff;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            body { 
+              font-family: monospace; 
+              padding: 10mm; 
+              font-size: 12px; 
+              color: #000;
+              overflow-x: hidden;
+            }
             .center { text-align: center; }
             .bold { font-weight: bold; }
             .row { display: flex; justify-content: space-between; margin-bottom: 3px; }
             .dashed { border-top: 1px dashed #000; margin: 8px 0; }
             .solid { border-top: 2px solid #000; margin: 8px 0; }
-            .red { color: red; }
-            .label { font-size: 9px; color: #aaa; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
+            .red { color: #d32f2f; }
+            .label { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
             .parties { display: flex; gap: 20px; margin: 8px 0; }
             .party { flex: 1; }
             .badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; background: #faeeda; color: #854f0b; display: inline-block; }
-            @media print { body { padding: 0; } }
+            @media print { 
+              body { padding: 5mm; }
+              .no-print { display: none; }
+            }
           </style>
         </head>
         <body>
