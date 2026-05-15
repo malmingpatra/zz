@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useToast } from '../_context/ToastContext';
 
 export interface DialogContextType {
   title: string;
@@ -10,20 +11,20 @@ export interface DialogContextType {
 }
 
 export function useAutoCloseDialog() {
-  const [dialogContext, setDialogContext] = React.useState<DialogContextType | null>(null);
+  const [dialogContext, setInnerDialogContext] = React.useState<DialogContextType | null>(null);
+  const { showToast } = useToast();
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (dialogContext && !dialogContext.isConfirm) {
-      timer = setTimeout(() => {
-        if (dialogContext.onCancel) dialogContext.onCancel();
-        setDialogContext(null);
-      }, 20000); // Auto close after 20 seconds
+  const setDialogContext = React.useCallback((ctx: DialogContextType | null) => {
+    if (ctx && !ctx.isConfirm) {
+      let type: 'success' | 'error' | 'info' = 'info';
+      const tLower = ctx.title.toLowerCase();
+      if (tLower.includes('sukses') || tLower.includes('berhasil')) type = 'success';
+      if (tLower.includes('error') || tLower.includes('gagal') || tLower.includes('eror')) type = 'error';
+      showToast(ctx.title, ctx.message, type);
+    } else {
+      setInnerDialogContext(ctx);
     }
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [dialogContext]);
+  }, [showToast]);
 
   return { dialogContext, setDialogContext };
 }
@@ -35,51 +36,7 @@ export function DialogOverlay({
   context: DialogContextType | null;
   onClose: () => void;
 }) {
-  const slideAnim = useRef(new Animated.Value(-100)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (context && !context.isConfirm) {
-      Animated.parallel([
-        Animated.spring(slideAnim, {
-          toValue: 40, // Slide down around 40px from top
-          useNativeDriver: true,
-          tension: 50,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        })
-      ]).start();
-    } else {
-      slideAnim.setValue(-100);
-      opacityAnim.setValue(0);
-    }
-  }, [context, slideAnim, opacityAnim]);
-
-  if (!context) return null;
-
-  if (!context.isConfirm) {
-    // Floating Notification (Toast)
-    return (
-      <Animated.View style={[s.toastContainer, { 
-        transform: [{ translateY: slideAnim }],
-        opacity: opacityAnim 
-      }]}>
-        <View style={s.toastContent}>
-          <Text style={s.toastTitle}>{context.title}</Text>
-          <Text style={s.toastMessage}>{context.message}</Text>
-        </View>
-        <TouchableOpacity style={s.toastCloseBtn} onPress={() => {
-           if (context.onCancel) context.onCancel();
-           onClose();
-        }}>
-          <Text style={s.toastCloseText}>X</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  }
+  if (!context || !context.isConfirm) return null;
 
   // Confirmation Overlay (Modal)
   return (
@@ -101,6 +58,7 @@ export function DialogOverlay({
             style={[s.dialogBtn, { backgroundColor: '#D32F2F', marginLeft: 12 }]}
             onPress={() => {
               if (context.onConfirm) context.onConfirm();
+              onClose();
             }}
           >
             <Text style={[s.dialogBtnText, { color: '#fff' }]}>Lanjutkan</Text>
@@ -154,50 +112,6 @@ const s = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_600SemiBold',
     textAlign: 'center',
-  },
-
-  toastContainer: {
-    position: 'absolute',
-    left: 20,
-    right: 20,
-    maxWidth: 400,
-    alignSelf: 'center',
-    backgroundColor: '#333',
-    borderRadius: 8,
-    padding: 16,
-    zIndex: 1000,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 6,
-  },
-  toastContent: {
-    flex: 1,
-    marginRight: 10,
-  },
-  toastTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
-    marginBottom: 4,
-  },
-  toastMessage: {
-    color: '#eee',
-    fontSize: 14,
-    fontFamily: 'Inter_400Regular',
-    lineHeight: 20,
-  },
-  toastCloseBtn: {
-    padding: 8,
-  },
-  toastCloseText: {
-    color: '#ccc',
-    fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
   }
 });
 // sync-trigger

@@ -18,6 +18,7 @@ import { Platform } from "react-native";
 import { ErrorBoundary } from "./_components/ErrorBoundary";
 import { DatabaseProvider } from "./_context/DatabaseContext";
 import { CartProvider } from "./_context/CartContext";
+import { ToastProvider } from "./_context/ToastContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -64,11 +65,13 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <DatabaseProvider>
             <CartProvider>
-              <GestureHandlerRootView>
-                <KeyboardProvider>
-                  <RootLayoutNav />
-                </KeyboardProvider>
-              </GestureHandlerRootView>
+              <ToastProvider>
+                <GestureHandlerRootView>
+                  <KeyboardProvider>
+                    <RootLayoutNav />
+                  </KeyboardProvider>
+                </GestureHandlerRootView>
+              </ToastProvider>
             </CartProvider>
           </DatabaseProvider>
         </QueryClientProvider>

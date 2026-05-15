@@ -32,6 +32,7 @@ export interface Product {
 
 export interface Order {
   id: string;
+  userId?: string;
   buyer: string;
   staff: string;
   total: number;

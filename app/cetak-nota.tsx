@@ -188,7 +188,8 @@ export default function NotaScreen() {
           <div class="dashed"></div>
           <div class="row"><span>No. Nota</span><span>${invoiceId}</span></div>
           <div class="row"><span>Tanggal</span><span>${dateStr}</span></div>
-          <div class="row"><span>Kasir</span><span>${order?.staff || "Kasir"}</span></div>
+          <div class="row"><span>Pelanggan</span><span>${order?.buyer || "Pelanggan Umum"}</span></div>
+          <div class="row"><span>Kasir</span><span>${order?.staff || storeSettings?.storeName || "Sistem"}</span></div>
           <div class="dashed"></div>
           ${items.map((item: any) => `
             <div class="bold">${item.name}</div>
@@ -259,8 +260,12 @@ export default function NotaScreen() {
                 <Text style={s.metaVal}>{dateStr}</Text>
               </View>
               <View style={s.metaRow}>
+                <Text style={s.metaKey}>Pelanggan</Text>
+                <Text style={s.metaVal}>{order?.buyer || "Pelanggan Umum"}</Text>
+              </View>
+              <View style={s.metaRow}>
                 <Text style={s.metaKey}>Kasir</Text>
-                <Text style={s.metaVal}>{order?.staff || "Kasir"}</Text>
+                <Text style={s.metaVal}>{order?.staff || storeSettings?.storeName || "Sistem"}</Text>
               </View>
             </View>
 

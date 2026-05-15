@@ -49,9 +49,11 @@ import NetInfo from "@react-native-community/netinfo";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useColors } from "../_hooks/useColors";
 import { useDatabase, Bantuan } from "../_context/DatabaseContext";
+import { useToast } from "../_context/ToastContext";
 import { auth, db } from "../_context/firebase-setup";
 import { writeBatch, doc, serverTimestamp } from "firebase/firestore";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { DialogOverlay, useAutoCloseDialog } from "../_components/DialogOverlay";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BantuanIcon } from "../_components/BantuanIcon";
 
@@ -138,6 +140,7 @@ export default function KasirScreen() {
   const [orderDate, setOrderDate] = useState("");
   const [showOrderDatePicker, setShowOrderDatePicker] = useState(false);
   const [orderPage, setOrderPage] = useState(1);
+  const { showToast } = useToast();
   const [productSearch, setProductSearch] = useState("");
   const [productCat, setProductCat] = useState("Semua");
   const [productCatSearch, setProductCatSearch] = useState("");
@@ -151,20 +154,8 @@ export default function KasirScreen() {
   const [tempBatchCategory, setTempBatchCategory] = useState("");
   const [backupLoading, setBackupLoading] = useState(false);
   const [restoreLoading, setRestoreLoading] = useState(false);
-  const [dialogContext, setDialogContext] = useState<{ title: string; message: string; isConfirm?: boolean; onConfirm?: () => void } | null>(null);
+  const { dialogContext, setDialogContext } = useAutoCloseDialog();
   const fileInputRef = React.useRef<any>(null);
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (dialogContext && !dialogContext.isConfirm) {
-      timer = setTimeout(() => {
-        setDialogContext(null);
-      }, 20000);
-    }
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [dialogContext]);
   
   const filteredCategories = useMemo(() => {
     const filtered = productCategoriesRaw.filter(c => c.toLowerCase().includes(productCatSearch.toLowerCase()));
@@ -2131,32 +2122,7 @@ export default function KasirScreen() {
       )}
 
       {/* Global Dialog Overlay */}
-      {dialogContext && (
-        <View style={s.overlay}>
-          <View style={s.dialogBox}>
-            <Text style={s.dialogTitle}>{dialogContext.title}</Text>
-            <Text style={s.dialogMessage}>{dialogContext.message}</Text>
-            <View style={s.dialogActions}>
-              <TouchableOpacity
-                style={[s.dialogBtn, { backgroundColor: colors.secondary }]}
-                onPress={() => setDialogContext(null)}
-              >
-                <Text style={[s.dialogBtnText, { color: colors.foreground }]}>
-                  {dialogContext.isConfirm ? "Batal" : "Ok"}
-                </Text>
-              </TouchableOpacity>
-              {dialogContext.isConfirm && (
-                <TouchableOpacity
-                  style={[s.dialogBtn, { backgroundColor: colors.destructive, marginLeft: 12 }]}
-                  onPress={dialogContext.onConfirm}
-                >
-                  <Text style={[s.dialogBtnText, { color: colors.destructiveForeground }]}>Lanjutkan</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </View>
-      )}
+      <DialogOverlay context={dialogContext} onClose={() => setDialogContext(null)} />
 
       {/* Profile Dropdown */}
       {dropdownOpen && (

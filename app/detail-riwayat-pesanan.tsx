@@ -27,7 +27,8 @@ import {
   ShoppingBag,
   X,
   SlidersHorizontal,
-  ChevronDown
+  ChevronDown,
+  Printer
 } from "lucide-react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useColors } from "./_hooks/useColors";
@@ -168,7 +169,14 @@ export default function DetailMemberScreen() {
     if (!member || !orders) return [];
     
     return orders.filter((o: any) => {
-      if (o.buyer !== member.name) return false;
+      const matchName = o.buyer === member.name;
+      const matchEmail = member.email && o.buyer === member.email;
+      const matchPhone = member.phone && member.phone !== "-" && o.phone === member.phone;
+      const matchUserId = o.userId && o.userId === member.id;
+      const matchStaff = o.staff && (o.staff === member.name || o.staff === member.email);
+      
+      if (!matchName && !matchEmail && !matchPhone && !matchUserId && !matchStaff) return false;
+      
       if (orderStatus && o.status !== orderStatus) return false;
       const q = orderSearch.trim().toLowerCase();
       if (q) {
@@ -470,22 +478,26 @@ export default function DetailMemberScreen() {
                           </TouchableOpacity>
 
                           {expandedOrderId === o.id && (
-                            <View style={{ paddingBottom: 16, paddingTop: 4, paddingLeft: 52 }}>
-                              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-                                <Text style={{ fontSize: 12, fontFamily: "Inter_500Medium", color: colors.mutedForeground }}>Total Belanja:</Text>
-                                <Text style={{ fontSize: 13, fontFamily: "Inter_700Bold", color: colors.foreground }}>{fmt(o.total)}</Text>
-                              </View>
-                              
-                              <View style={{ flexDirection: 'row', gap: 10 }}>
+                            <View style={{ paddingBottom: 16, paddingTop: 4 }}>
+                              <View style={{ flexDirection: 'column', gap: 10 }}>
+                                <TouchableOpacity 
+                                  style={{ width: '100%', flexDirection: 'row', gap: 6, paddingVertical: 10, borderRadius: 8, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border }}
+                                  onPress={() => router.push({ pathname: "/cetak-nota", params: { orderId: o.id } })}
+                                  activeOpacity={0.7}
+                                >
+                                  <Printer size={16} color={colors.foreground} />
+                                  <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.foreground }}>Cetak Nota</Text>
+                                </TouchableOpacity>
+
                                 {o.status !== "selesai" && o.status !== "dibatalkan" && updateOrderStatus && (
                                   <TouchableOpacity 
-                                    style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: "#FCE8E8", alignItems: 'center', borderWidth: 1, borderColor: "#F8B4B4" }}
+                                    style={{ width: '100%', paddingVertical: 10, borderRadius: 8, backgroundColor: "#FCE8E8", alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: "#F8B4B4" }}
                                     onPress={() => {
                                       setSelectedOrderToCancel(o);
                                       setShowCancelConfirm(true);
                                     }}
                                   >
-                                    <Text style={{ fontSize: 12, fontFamily: "Inter_600SemiBold", color: "#991B1B" }}>Batalkan</Text>
+                                    <Text style={{ fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#991B1B" }}>Batalkan Pesanan</Text>
                                   </TouchableOpacity>
                                 )}
                               </View>

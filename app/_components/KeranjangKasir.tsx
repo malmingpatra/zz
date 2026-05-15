@@ -114,8 +114,9 @@ export default function KeranjangKasir({ visible, onClose }: KeranjangKasirProps
 
     await addOrder({
       id: orderId,
-      buyer: shouldPrint ? "Pelanggan Umum" : (currentUser?.displayName || "Pembeli"), 
-      staff: shouldPrint ? (currentUser?.displayName || "Staf") : "",
+      userId: currentUser?.uid || "",
+      buyer: shouldPrint ? "Pelanggan Umum" : (userProfile?.name || currentUser?.displayName || (currentUser?.email ? currentUser.email.split('@')[0] : "Pembeli")), 
+      staff: shouldPrint ? (userProfile?.name || currentUser?.displayName || (currentUser?.email ? currentUser.email.split('@')[0] : "Staf")) : "",
       total: orderTotal,
       cat: cartItems[0]?.product?.category || "lainnya",
       date: now.toISOString().split("T")[0],
