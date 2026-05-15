@@ -52,7 +52,8 @@ import { useDatabase, Bantuan } from "../_context/DatabaseContext";
 import { auth, db } from "../_context/firebase-setup";
 import { writeBatch, doc, serverTimestamp } from "firebase/firestore";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { FontAwesome } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { BantuanIcon } from "../_components/BantuanIcon";
 
 type Tab = "pesanan" | "produk" | "statistik" | "admin";
 
@@ -2054,23 +2055,12 @@ export default function KasirScreen() {
                 {bantuan.map((b) => (
                   <TouchableOpacity key={b.id || b.name} style={s.bantCard} activeOpacity={0.7} onPress={() => setSelectedBantuan(b)}>
                     <View style={[s.bantIconBox, { backgroundColor: b.bg || colors.secondary }]}>
-                      {(() => {
-                        let name = b.icon.trim() || "";
-                        let isBrand = false;
-                        // Handle fa-brands fa-whatsapp format
-                        if (name.includes("fa-brands")) isBrand = true;
-                        if (name.includes(" ")) {
-                          const parts = name.split(" ");
-                          name = parts[parts.length - 1]; // Take the last part
-                        }
-                        if (name.startsWith("fa-")) name = name.replace(/^fa-(brands|solid|regular|light|thin)?\s?/, "").replace(/^fa-/, "");
-                        
-                        if (["whatsapp", "facebook", "facebook-messenger", "twitter", "instagram", "youtube", "tiktok", "github", "linkedin", "telegram"].includes(name.toLowerCase())) {
-                            isBrand = true;
-                        }
-                        
-                        return <FontAwesome name={(name as any).toLowerCase() || "question"} size={16} color={b.color || colors.primary} />;
-                      })()}
+                      <BantuanIcon
+                        iconName={b.icon}
+                        color={b.color || colors.primary}
+                        size={20}
+                        lib={b.lib}
+                      />
                     </View>
                     <Text style={s.bantName}>{b.name}</Text>
                     <ChevronRight size={16} color="#ccc" />

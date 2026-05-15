@@ -7,16 +7,14 @@ import {
   ScrollView, 
   TextInput, 
   Platform,
-  Alert
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "../_hooks/useColors";
 import { useDatabase } from "../_context/DatabaseContext";
 import { useAutoCloseDialog, DialogOverlay } from "../_components/DialogOverlay";
-import * as LucideIcons from "lucide-react-native";
-import { ArrowLeft, ChevronRight, Tag, Link as LinkIcon, Plus, Search as SearchIcon, Smartphone, ChevronDown, HelpCircle } from "lucide-react-native";
-import { FontAwesome6 } from "@expo/vector-icons";
+import { ArrowLeft, ChevronRight, Tag, Link as LinkIcon, Plus, Search as SearchIcon, ChevronDown } from "lucide-react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 // Basic color choices
 const COLOR_PAIRS = [
@@ -32,6 +30,34 @@ const COLOR_PAIRS = [
   { bg: "#e0fff4", ic: "#065f46" },
 ];
 
+// Daftar ikon populer MaterialCommunityIcons untuk dipilih
+const POPULAR_ICONS = [
+  { name: "whatsapp", label: "WhatsApp" },
+  { name: "instagram", label: "Instagram" },
+  { name: "facebook", label: "Facebook" },
+  { name: "telegram", label: "Telegram" },
+  { name: "twitter", label: "Twitter/X" },
+  { name: "youtube", label: "YouTube" },
+  { name: "tiktok", label: "TikTok" },
+  { name: "email-outline", label: "Email" },
+  { name: "phone-outline", label: "Telepon" },
+  { name: "web", label: "Website" },
+  { name: "map-marker-outline", label: "Lokasi" },
+  { name: "chat-outline", label: "Chat" },
+  { name: "headset", label: "CS" },
+  { name: "help-circle-outline", label: "FAQ" },
+  { name: "information-outline", label: "Info" },
+  { name: "shield-check-outline", label: "Privasi" },
+  { name: "book-open-outline", label: "Panduan" },
+  { name: "alert-circle-outline", label: "Laporan" },
+  { name: "store-outline", label: "Toko" },
+  { name: "shopping-outline", label: "Belanja" },
+  { name: "github", label: "GitHub" },
+  { name: "linkedin", label: "LinkedIn" },
+  { name: "discord", label: "Discord" },
+  { name: "slack", label: "Slack" },
+];
+
 export default function TambahBantuan() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -39,93 +65,6 @@ export default function TambahBantuan() {
   const colors = useColors();
   const { addBantuan, updateBantuan, bantuan } = useDatabase();
   const { dialogContext, setDialogContext } = useAutoCloseDialog();
-  
-  const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background },
-    header: { 
-      height: 56, 
-      flexDirection: "row", 
-      alignItems: "center", 
-      paddingHorizontal: 16, 
-      backgroundColor: colors.card,
-      borderBottomWidth: 0.5,
-      borderBottomColor: colors.border,
-    },
-    backBtn: { 
-      width: 36, 
-      height: 36, 
-      borderRadius: 10, 
-      backgroundColor: colors.secondary, 
-      alignItems: "center", 
-      justifyContent: "center", 
-      marginRight: 12 
-    },
-    headerTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground },
-    scrollContent: { padding: 12 },
-    previewCard: { 
-      backgroundColor: colors.card, 
-      borderRadius: 14, 
-      borderWidth: 0.5, 
-      borderColor: colors.border, 
-      padding: 14, 
-      flexDirection: "row", 
-      alignItems: "center", 
-      marginBottom: 10 
-    },
-    prevIconWrap: { width: 46, height: 46, borderRadius: 13, alignItems: "center", justifyContent: "center" },
-    prevInfo: { flex: 1, paddingHorizontal: 12 },
-    prevName: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 2 },
-    prevLink: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
-    fieldGroup: { 
-      backgroundColor: colors.card, 
-      borderRadius: 14, 
-      borderWidth: 0.5, 
-      borderColor: colors.border, 
-      overflow: "hidden", 
-      marginBottom: 10 
-    },
-    fieldRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, borderBottomWidth: 0.5, borderBottomColor: colors.secondary, minHeight: 52 },
-    fieldInner: { flex: 1, paddingVertical: 8, paddingHorizontal: 10 },
-    fieldLabel: { fontSize: 11, color: colors.mutedForeground, fontFamily: "Inter_500Medium", marginBottom: 2 },
-    input: { 
-      fontSize: 14, 
-      fontFamily: "Inter_400Regular", 
-      color: colors.foreground, 
-      padding: 0,
-      ...(Platform.OS === "web" ? ({ outlineWidth: 0, outlineColor: 'transparent' } as object) : {}),
-    },
-    iconSection: { backgroundColor: colors.card, borderRadius: 14, borderWidth: 0.5, borderColor: colors.border, overflow: "hidden", marginBottom: 10 },
-    iconSecHead: { padding: 13, paddingBottom: 0 },
-    secLabel: { fontSize: 11, fontFamily: "Inter_700Bold", color: colors.mutedForeground, textTransform: "uppercase", letterSpacing: 0.8 },
-    libTabs: { flexDirection: "row", gap: 6, marginVertical: 10 },
-    libTab: { flex: 1, height: 34, borderRadius: 8, borderWidth: 0.5, borderColor: colors.border, backgroundColor: colors.card, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5 },
-    libTabActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-    libTabText: { fontSize: 12, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
-    libTabTextActive: { color: colors.primaryForeground },
-    iconSearchRow: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: colors.secondary, borderRadius: 9, paddingHorizontal: 10, height: 38 },
-    searchInput: { 
-      flex: 1, 
-      fontSize: 13, 
-      fontFamily: "Inter_400Regular", 
-      color: colors.foreground,
-      ...(Platform.OS === "web" ? ({ outlineWidth: 0, outlineColor: 'transparent' } as object) : {}),
-    },
-    iconGridWrap: { padding: 14 },
-    iconCount: { fontSize: 10, color: colors.mutedForeground, marginBottom: 6 },
-    iconGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-    iconOpt: { width: 44, height: 44, borderRadius: 9, borderWidth: 0.5, borderColor: colors.border, backgroundColor: colors.card, alignItems: "center", justifyContent: "center" },
-    iconOptSelected: { borderColor: colors.primary, backgroundColor: colors.secondary },
-    colorSection: { backgroundColor: colors.card, borderRadius: 14, borderWidth: 0.5, borderColor: colors.border, padding: 14, marginBottom: 10 },
-    colorGrid: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-    colorOpt: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "transparent" },
-    colorOptSelected: { borderColor: colors.foreground },
-    checkMark: { fontSize: 14, fontWeight: "700", color: "rgba(0,0,0,0.4)" },
-    bottomActions: { padding: 12, backgroundColor: colors.background, flexDirection: "row", gap: 8 },
-    btnCancel: { flex: 1, height: 48, backgroundColor: colors.card, borderRadius: 12, borderWidth: 0.5, borderColor: colors.border, alignItems: "center", justifyContent: "center" },
-    btnCancelText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
-    btnAdd: { flex: 1.6, height: 48, backgroundColor: colors.primary, borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
-    btnAddText: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primaryForeground }
-  });
 
   const existingBantuan = useMemo(() => {
     return id ? bantuan.find(b => b.id === id) : null;
@@ -134,6 +73,7 @@ export default function TambahBantuan() {
   const [nama, setNama] = useState(existingBantuan?.name || "");
   const [link, setLink] = useState(existingBantuan?.link || "");
   const [iconName, setIconName] = useState(existingBantuan?.icon || "whatsapp");
+  const [iconSearch, setIconSearch] = useState("");
   
   const initialColor = useMemo(() => {
     if (!existingBantuan) return COLOR_PAIRS[0];
@@ -147,60 +87,33 @@ export default function TambahBantuan() {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [pickingType, setPickingType] = useState<"bg" | "ic">("bg");
 
-  const BRAND_ICONS = [
-    "whatsapp", "facebook", "facebook-messenger", "twitter", "instagram",
-    "youtube", "tiktok", "github", "linkedin", "telegram", "x-twitter",
-    "snapchat", "pinterest", "reddit", "discord", "slack", "spotify",
-    "apple", "google", "android", "windows", "wordpress", "shopify",
-  ];
-
-  const IconPreview = useMemo(() => {
-    let raw = iconName.trim() || "";
-    let isBrand = false;
-
-    // Deteksi prefix fa-brands sebelum di-strip
-    if (raw.includes("fa-brands") || raw.includes("fab ")) isBrand = true;
-
-    // Ambil kata terakhir (handle "fa-brands fa-whatsapp" atau "fab fa-whatsapp")
-    let name = raw.split(" ").pop() || "";
-
-    // Strip semua prefix fa-
-    name = name.replace(/^fa-/, "").toLowerCase() || "question";
-
-    // Auto-deteksi brand berdasarkan nama ikon
-    if (BRAND_ICONS.includes(name)) isBrand = true;
-
-    const color = isCustomColor ? customIc : selectedColor.ic;
-
-    return (
-      <FontAwesome6
-        name={name as any}
-        size={20}
-        color={color}
-        iconStyle={isBrand ? "brand" : "solid"}
-      />
+  const filteredIcons = useMemo(() => {
+    if (!iconSearch.trim()) return POPULAR_ICONS;
+    return POPULAR_ICONS.filter(i => 
+      i.name.includes(iconSearch.toLowerCase()) || 
+      i.label.toLowerCase().includes(iconSearch.toLowerCase())
     );
-  }, [iconName, selectedColor.ic, customIc, isCustomColor]);
+  }, [iconSearch]);
+
+  const currentBg = isCustomColor ? customBg : selectedColor.bg;
+  const currentIc = isCustomColor ? customIc : selectedColor.ic;
 
   const handleAdd = async () => {
     if (!nama.trim()) return setDialogContext({ title: "Error", message: "Nama harus diisi" });
     if (!link.trim()) return setDialogContext({ title: "Error", message: "Link harus diisi" });
-    if (!iconName.trim()) return setDialogContext({ title: "Error", message: "Nama ikon harus diisi" });
+    if (!iconName.trim()) return setDialogContext({ title: "Error", message: "Pilih ikon terlebih dahulu" });
     
-    const bg = isCustomColor ? customBg : selectedColor.bg;
-    const color = isCustomColor ? customIc : selectedColor.ic;
+    const payload = {
+      icon: iconName,
+      name: nama.trim(),
+      bg: currentBg,
+      color: currentIc,
+      link: link.trim(),
+      lib: "mci" as any,
+    };
 
     if (existingBantuan) {
-      await updateBantuan({
-        ...existingBantuan,
-        icon: iconName,
-        name: nama.trim(),
-        bg,
-        color,
-        link: link.trim(),
-        lib: "fa",
-      });
-      
+      await updateBantuan({ ...existingBantuan, ...payload });
       setDialogContext({ 
         title: "Berhasil", 
         message: `"${nama}" telah diperbarui`,
@@ -210,14 +123,8 @@ export default function TambahBantuan() {
     } else {
       await addBantuan({
         id: "bant-" + Date.now().toString(),
-        icon: iconName,
-        name: nama.trim(),
-        bg,
-        color,
-        link: link.trim(),
-        lib: "fa",
+        ...payload,
       });
-      
       setDialogContext({ 
         title: "Berhasil", 
         message: `"${nama}" telah ditambahkan ke pusat bantuan`,
@@ -226,6 +133,124 @@ export default function TambahBantuan() {
       });
     }
   };
+
+  const s = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    header: { 
+      height: 56, 
+      flexDirection: "row", 
+      alignItems: "center", 
+      paddingHorizontal: 16, 
+      backgroundColor: colors.card,
+      borderBottomWidth: 0.5,
+      borderBottomColor: colors.border,
+    },
+    backBtn: { 
+      width: 36, height: 36, borderRadius: 10, 
+      backgroundColor: colors.secondary, 
+      alignItems: "center", justifyContent: "center", 
+      marginRight: 12 
+    },
+    headerTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: colors.foreground },
+    scrollContent: { padding: 12, paddingBottom: 100 },
+    previewCard: { 
+      backgroundColor: colors.card, borderRadius: 14, 
+      borderWidth: 0.5, borderColor: colors.border, 
+      padding: 14, flexDirection: "row", alignItems: "center", marginBottom: 10 
+    },
+    prevIconWrap: { width: 46, height: 46, borderRadius: 13, alignItems: "center", justifyContent: "center" },
+    prevInfo: { flex: 1, paddingHorizontal: 12 },
+    prevName: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: colors.foreground, marginBottom: 2 },
+    prevLink: { fontSize: 11, fontFamily: "Inter_400Regular", color: colors.mutedForeground },
+    fieldGroup: { 
+      backgroundColor: colors.card, borderRadius: 14, 
+      borderWidth: 0.5, borderColor: colors.border, 
+      overflow: "hidden", marginBottom: 10 
+    },
+    fieldRow: { 
+      flexDirection: "row", alignItems: "center", 
+      paddingHorizontal: 14, borderBottomWidth: 0.5, 
+      borderBottomColor: colors.secondary, minHeight: 52 
+    },
+    fieldInner: { flex: 1, paddingVertical: 8, paddingHorizontal: 10 },
+    fieldLabel: { fontSize: 11, color: colors.mutedForeground, fontFamily: "Inter_500Medium", marginBottom: 2 },
+    input: { 
+      fontSize: 14, fontFamily: "Inter_400Regular", color: colors.foreground, padding: 0,
+      ...(Platform.OS === "web" ? ({ outlineWidth: 0, outlineColor: 'transparent' } as object) : {}),
+    },
+    iconSection: { 
+      backgroundColor: colors.card, borderRadius: 14, 
+      borderWidth: 0.5, borderColor: colors.border, 
+      overflow: "hidden", marginBottom: 10 
+    },
+    iconSecHead: { padding: 13, paddingBottom: 8 },
+    secLabel: { fontSize: 11, fontFamily: "Inter_700Bold", color: colors.mutedForeground, textTransform: "uppercase", letterSpacing: 0.8 },
+    iconSearchRow: { 
+      flexDirection: "row", alignItems: "center", gap: 8, 
+      backgroundColor: colors.secondary, borderRadius: 9, 
+      paddingHorizontal: 10, height: 38,
+      marginHorizontal: 13, marginBottom: 10,
+    },
+    searchInput: { 
+      flex: 1, fontSize: 13, fontFamily: "Inter_400Regular", color: colors.foreground,
+      ...(Platform.OS === "web" ? ({ outlineWidth: 0, outlineColor: 'transparent' } as object) : {}),
+    },
+    iconGridWrap: { paddingHorizontal: 13, paddingBottom: 13 },
+    iconGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    iconOpt: { 
+      width: 52, height: 52, borderRadius: 12, 
+      borderWidth: 1.5, borderColor: colors.border, 
+      backgroundColor: colors.card, 
+      alignItems: "center", justifyContent: "center",
+    },
+    iconOptSelected: { borderColor: colors.primary, backgroundColor: colors.accent },
+    iconOptLabel: { fontSize: 8, color: colors.mutedForeground, marginTop: 2, textAlign: "center" },
+    iconOptBox: { alignItems: "center", width: 60 },
+    // Ketik manual
+    manualRow: {
+      flexDirection: "row", alignItems: "center", gap: 8,
+      paddingHorizontal: 13, paddingBottom: 13,
+    },
+    manualInput: {
+      flex: 1, height: 40, backgroundColor: colors.secondary,
+      borderRadius: 8, borderWidth: 1, borderColor: colors.border,
+      paddingHorizontal: 12, fontSize: 13, fontFamily: "Inter_400Regular",
+      color: colors.foreground,
+      ...(Platform.OS === "web" ? ({ outlineWidth: 0, outlineColor: 'transparent' } as object) : {}),
+    },
+    manualHint: { fontSize: 10, color: colors.mutedForeground, fontStyle: "italic", paddingHorizontal: 13, paddingBottom: 10 },
+    colorSection: { 
+      backgroundColor: colors.card, borderRadius: 14, 
+      borderWidth: 0.5, borderColor: colors.border, 
+      padding: 14, marginBottom: 10 
+    },
+    colorGrid: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+    colorOpt: { 
+      width: 34, height: 34, borderRadius: 10, 
+      alignItems: "center", justifyContent: "center", 
+      borderWidth: 2, borderColor: "transparent" 
+    },
+    colorOptSelected: { borderColor: colors.foreground },
+    checkMark: { fontSize: 14, fontWeight: "700", color: "rgba(0,0,0,0.4)" },
+    bottomActions: { 
+      position: "absolute", bottom: 0, left: 0, right: 0,
+      padding: 12, backgroundColor: colors.background, 
+      flexDirection: "row", gap: 8,
+      borderTopWidth: 1, borderTopColor: colors.border,
+    },
+    btnCancel: { 
+      flex: 1, height: 48, backgroundColor: colors.card, 
+      borderRadius: 12, borderWidth: 0.5, borderColor: colors.border, 
+      alignItems: "center", justifyContent: "center" 
+    },
+    btnCancelText: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: colors.mutedForeground },
+    btnAdd: { 
+      flex: 1.6, height: 48, backgroundColor: colors.primary, 
+      borderRadius: 12, alignItems: "center", justifyContent: "center", 
+      flexDirection: "row", gap: 8 
+    },
+    btnAddText: { fontSize: 13, fontFamily: "Inter_700Bold", color: colors.primaryForeground }
+  });
 
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
@@ -238,11 +263,16 @@ export default function TambahBantuan() {
       </View>
 
       <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
+        
         {/* PREVIEW */}
         <View style={s.previewCard}>
-            <View style={[s.prevIconWrap, { backgroundColor: isCustomColor ? customBg : selectedColor.bg }]}>
-              {IconPreview}
-            </View>
+          <View style={[s.prevIconWrap, { backgroundColor: currentBg }]}>
+            <MaterialCommunityIcons 
+              name={iconName as any || "help-circle-outline"} 
+              size={22} 
+              color={currentIc} 
+            />
+          </View>
           <View style={s.prevInfo}>
             <Text style={s.prevName} numberOfLines={1}>{nama || "Nama item..."}</Text>
             <Text style={s.prevLink} numberOfLines={1}>{link || "https://..."}</Text>
@@ -266,7 +296,7 @@ export default function TambahBantuan() {
               />
             </View>
           </View>
-          <View style={s.fieldRow}>
+          <View style={[s.fieldRow, { borderBottomWidth: 0 }]}>
             <LinkIcon size={17} color="#BBB" />
             <View style={s.fieldInner}>
               <Text style={s.fieldLabel}>Link / URL</Text>
@@ -283,28 +313,65 @@ export default function TambahBantuan() {
           </View>
         </View>
 
-        {/* ICON INPUT */}
+        {/* ICON PICKER */}
         <View style={s.iconSection}>
           <View style={s.iconSecHead}>
-            <Text style={s.secLabel}>Ikon Custom</Text>
+            <Text style={s.secLabel}>Pilih Ikon</Text>
           </View>
-          
-          <View style={{ padding: 14 }}>
-            <View style={s.iconSearchRow}>
-              <SearchIcon size={15} color="#BBB" />
-              <TextInput 
-                style={[s.searchInput, Platform.OS === "web" ? { outlineWidth: 0, outlineColor: 'transparent' } : {}]} 
-                value={iconName} 
-                onChangeText={setIconName} 
-                placeholder="cth. whatsapp, facebook"
-                placeholderTextColor="#BBB"
-                autoCapitalize="none"
-                underlineColorAndroid="transparent"
-              />
+
+          {/* Search ikon */}
+          <View style={s.iconSearchRow}>
+            <SearchIcon size={15} color="#BBB" />
+            <TextInput 
+              style={s.searchInput}
+              value={iconSearch} 
+              onChangeText={setIconSearch} 
+              placeholder="Cari ikon... (whatsapp, email, dll)"
+              placeholderTextColor="#BBB"
+              autoCapitalize="none"
+              underlineColorAndroid="transparent"
+            />
+          </View>
+
+          {/* Grid ikon populer */}
+          <View style={s.iconGridWrap}>
+            <View style={s.iconGrid}>
+              {filteredIcons.map((ic) => (
+                <TouchableOpacity
+                  key={ic.name}
+                  style={s.iconOptBox}
+                  onPress={() => setIconName(ic.name)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[s.iconOpt, iconName === ic.name && s.iconOptSelected]}>
+                    <MaterialCommunityIcons 
+                      name={ic.name as any} 
+                      size={22} 
+                      color={iconName === ic.name ? colors.primary : colors.mutedForeground} 
+                    />
+                  </View>
+                  <Text style={[s.iconOptLabel, iconName === ic.name && { color: colors.primary, fontFamily: "Inter_600SemiBold" }]} numberOfLines={1}>
+                    {ic.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
-            <Text style={{ fontSize: 11, color: "#888", marginTop: 8, fontStyle: "italic" }}>
-                Ketik nama ikon FontAwesome (Lowercase, cth: whatsapp, instagram)
-            </Text>
+          </View>
+
+          {/* Input nama ikon manual */}
+          <Text style={s.manualHint}>
+            Atau ketik nama ikon MaterialCommunityIcons secara manual:
+          </Text>
+          <View style={s.manualRow}>
+            <TextInput
+              style={s.manualInput}
+              value={iconName}
+              onChangeText={setIconName}
+              placeholder="cth. whatsapp, email-outline, phone"
+              placeholderTextColor="#BBB"
+              autoCapitalize="none"
+              underlineColorAndroid="transparent"
+            />
           </View>
         </View>
 
@@ -435,5 +502,3 @@ export default function TambahBantuan() {
   );
 }
 // sync-trigger
-
-

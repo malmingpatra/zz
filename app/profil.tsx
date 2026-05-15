@@ -23,6 +23,7 @@ import { useAutoCloseDialog, DialogOverlay } from "./_components/DialogOverlay";
 import * as LucideIcons from "lucide-react-native";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import ConfirmationModal from "./_components/ConfirmationModal";
+import { BantuanIcon } from "./_components/BantuanIcon";
 import { 
   ArrowLeft, 
   User, 
@@ -750,11 +751,12 @@ export default function ProfilScreen() {
                   }}
                 >
                   <View style={[s.helpDot, { backgroundColor: h.bg }]}>
-                    {(() => {
-                      // @ts-ignore
-                      const IconComp = LucideIcons[h.icon] || ICON_MAP[h.icon as keyof typeof ICON_MAP] || HelpCircle;
-                      return <IconComp size={18} color={h.color || colors.primary} />;
-                    })()}
+                    <BantuanIcon
+                      iconName={h.icon}
+                      color={h.color || colors.primary}
+                      size={20}
+                      lib={h.lib}
+                    />
                   </View>
                   <View style={s.helpInfo}>
                     <Text style={s.helpTitle}>{h.name}</Text>
